@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sage — місце, де починається твій стиль</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  :root{
+    --bg:#08080a;--card-bg:rgba(20,20,24,.4);--card-bg-hover:rgba(32,32,38,.6);
+    --ink:#f0ece4;--muted:#a8a29a;--line:rgba(255,255,255,.12);--line-soft:rgba(255,255,255,.06);
+    --green:#7fb87f;--red:#e05a5a;--silver:#d4d0c8;--cream:#f5f0e6;--accent:#e05a5a;
+    --ease-smooth: cubic-bezier(0.25, 0.8, 0.25, 1);--ease-bounce: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  body.winter-mode { --bg:#04060a;--card-bg:rgba(12,18,28,.6);--card-bg-hover:rgba(20,30,45,.8);
+    --line:rgba(150,190,255,.2);--line-soft:rgba(150,190,255,.08);--accent:#7ab4f5;
+    --cream:#d8e8f5;--silver:#9ab6cc;--green:#5ae0c0; }
+  body.winter-mode::before { filter: brightness(0.35) contrast(1.1) grayscale(0.3) sepia(0.2) hue-rotate(180deg) blur(3px);transform: scale(1.05); }
+  body.winter-mode::after { background: radial-gradient(ellipse at 50% 0%, rgba(100,160,255,0.12) 0%, transparent 60%),linear-gradient(180deg, rgba(4,6,10,0.4) 0%, rgba(4,6,10,0.85) 60%, rgba(4,6,10,0.98) 100%); }
+  body.winter-mode .card { box-shadow: inset 0 0 0 1px rgba(150,190,255,0.1); }
+  body.winter-mode .modal, body.winter-mode .text-modal, body.winter-mode .cart-panel { box-shadow: 0 30px 80px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(150,190,255,0.2); }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{ background:var(--bg);color:var(--ink);font-family:'Inter',-apple-system,sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh;position:relative;transition: background 0.5s, color 0.5s; }
+  body::before{ content:'';position:fixed;inset:0;background-image:url('https://i.imgur.com/YhGEkG3.jpeg');background-size:cover;background-position:center;background-attachment:fixed;z-index:-2;filter:brightness(0.5) contrast(1.1);transition: filter 0.8s, transform 0.8s; }
+  body::after{ content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.05) 0%, transparent 60%),linear-gradient(180deg, rgba(8,8,10,0.3) 0%, rgba(8,8,10,0.8) 60%, rgba(8,8,10,0.95) 100%);z-index:-1;transition: background 0.5s; }
+  #snowCanvas { position: fixed;top: 0;left: 0;width: 100%;height: 100%;pointer-events: none;z-index: 5;display: none; }
+  body.winter-mode #snowCanvas { display: block; }
+  .wrap{max-width:1320px;margin:0 auto;padding:0 28px}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer}
+  img{display:block;max-width:100%}
+  .hero-section { position: relative;width: 100%;height: 100vh;min-height: 700px;background: url('https://i.imgur.com/YhGEkG3.jpeg') center/cover no-repeat;display: flex;flex-direction: column;justify-content: flex-start;overflow: hidden;mask-image: linear-gradient(to bottom, black 85%, transparent 100%);-webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);margin-bottom: -50px; }
+  .hero-section::before { content: '';position: absolute;inset: 0;background: rgba(0,0,0,0.4);z-index: 1; }
+  .hero-nav { position: relative;z-index: 10;display: flex;justify-content: space-between;align-items: center;padding: 30px 40px 10px 40px;font-family: monospace, sans-serif;font-size: 11px;letter-spacing: 1px;text-transform: uppercase; }
+  .hero-nav-left { display: flex;gap: 40px; }
+  .hero-logo { position: absolute;left: 50%;transform: translateX(-50%);top: 30px;font-family: 'Inter', sans-serif;font-size: 18px;font-weight: 700;letter-spacing: 4px;display: flex;align-items: center;gap: 10px;color: #fff;cursor: pointer;z-index: 20; }
+  .logo-icon-wrap { position: relative;width: 24px;height: 24px;display: flex;align-items: center;justify-content: center; }
+  .logo-icon-wrap svg { width: 24px;height: 24px;fill: #fff;transition: transform 0.3s, filter 0.3s;position: relative;z-index: 2; }
+  .hero-logo:hover .logo-icon-wrap svg { animation: spinStep 4s ease-in-out infinite;filter: drop-shadow(0 0 15px rgba(255,255,255,0.8)); }
+  .click-ring { position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);width: 0;height: 0;border: 2px solid rgba(255,255,255,0.8);border-radius: 50%;opacity: 0;pointer-events: none;z-index: 1; }
+  .hero-logo.clicked .logo-icon-wrap svg { animation: starBurst 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .hero-logo.clicked .click-ring { animation: ringExpand 0.6s ease-out forwards; }
+  @keyframes spinStep { 0% { transform: rotate(0deg); } 15% { transform: rotate(90deg); } 25% { transform: rotate(90deg); } 40% { transform: rotate(180deg); } 50% { transform: rotate(180deg); } 65% { transform: rotate(270deg); } 75% { transform: rotate(270deg); } 90% { transform: rotate(360deg); } 100% { transform: rotate(360deg); } }
+  @keyframes starBurst { 0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 10px #fff); } 50% { transform: scale(1.8) rotate(180deg); filter: drop-shadow(0 0 40px #fff) brightness(2); } 100% { transform: scale(1) rotate(360deg); filter: drop-shadow(0 0 10px #fff); } }
+  @keyframes ringExpand { 0% { width: 20px; height: 20px; opacity: 1; border-width: 4px; } 100% { width: 150px; height: 150px; opacity: 0; border-width: 1px; } }
+  .hero-nav-right { display: flex;align-items: center;gap: 20px; }
+  .social-btn, .cart-btn, .winter-btn { background: none;border: none;padding: 8px;display: flex;align-items: center;justify-content: center;color: #fff;cursor: pointer;transition: transform 0.3s var(--ease-bounce), opacity 0.3s;position: relative; }
+  .social-btn:hover, .cart-btn:hover, .winter-btn:hover { transform: scale(1.15);opacity: 0.8; }
+  .cart-btn svg { width: 28px;height: 28px; }
+  .social-btn svg { width: 22px;height: 22px;fill: #fff; }
+  .winter-btn svg { width: 22px;height: 22px;stroke: #fff;fill: none;stroke-width: 2;stroke-linecap: round;stroke-linejoin: round;transition: stroke 0.3s; }
+  body.winter-mode .winter-btn svg { stroke: #7ab4f5;filter: drop-shadow(0 0 8px rgba(122,180,245,0.6)); }
+  .cart-badge { position: absolute;top: 0;right: 0;background: var(--cream);color: var(--bg);font-size: 10px;font-weight: 700;min-width: 18px;height: 18px;border-radius: 9px;display: flex;align-items: center;justify-content: center;padding: 0 4px;transform: translate(4px, -4px);box-shadow: 0 0 10px rgba(245,240,230,.5); }
+  .brand-marquee { position: relative;z-index: 10;width: 100%;overflow: hidden;background: rgba(0, 0, 0, 0.4);backdrop-filter: blur(10px);border-top: 1px solid rgba(255,255,255,0.08);border-bottom: 1px solid rgba(255,255,255,0.08);padding: 12px 0;display: flex;white-space: nowrap;margin-top: 30px; }
+  .marquee-content { display: flex;animation: scrollMarquee 30s linear infinite; }
+  .marquee-content span { color: #fff;font-family: monospace, sans-serif;font-size: 11px;letter-spacing: 2px;text-transform: uppercase;margin-right: 30px;opacity: 0.8; }
+  .marquee-content span.diamond { font-size: 8px;opacity: 0.5;margin-right: 30px; }
+  @keyframes scrollMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .hero-discover { position: absolute;right: 40px;bottom: 120px;z-index: 10;font-family: monospace, sans-serif;font-size: 12px;color: #fff;text-transform: uppercase;text-decoration: underline;text-underline-offset: 4px;cursor: pointer;transition: color 0.3s; }
+  .hero-discover:hover { color: #a8a29a; }
+  .hero-3d-wrap { position: absolute;top: 55%;left: 50%;transform: translate(-50%, -50%);width: 100%;height: 400px;z-index: 15;perspective: 1500px;display: flex;align-items: center;justify-content: center; }
+  .hero-3d-title { position: absolute;top: -40px;left: 50%;transform: translateX(-50%);font-family: monospace, sans-serif;font-size: 16px;font-weight: 700;letter-spacing: 5px;text-transform: uppercase;color: rgba(255,255,255,0.9);text-shadow: 0 2px 10px rgba(0,0,0,0.8);white-space: nowrap;background: rgba(20,20,24,0.6);padding: 8px 24px;border-radius: 30px;border: 1px solid rgba(255,255,255,0.1);backdrop-filter: blur(10px); }
+  .hero-3d-carousel { position: relative;width: 200px;height: 260px;transform-style: preserve-3d;animation: spinCarousel 45s linear infinite; will-change: transform; }
+  .hero-3d-carousel:hover { animation-play-state: paused; }
+  @keyframes spinCarousel { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(-360deg); } }
+  .hero-3d-item { position: absolute;width: 200px;height: 260px;left: 0;top: 0;background: var(--card-bg);border: 1px solid rgba(255,255,255,0.2);border-radius: 16px;backdrop-filter: blur(20px);-webkit-backdrop-filter: blur(20px);box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);cursor: pointer;transition: background 0.3s, border-color 0.3s;display: flex;flex-direction: column;align-items: center;justify-content: center;padding: 20px;text-decoration: none; }
+  .hero-3d-item:hover { background: rgba(40,40,50,0.9);border-color: rgba(255,255,255,0.5);box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 0 30px rgba(255,255,255,0.1); }
+  .hero-3d-item img, .hero-3d-item svg { width: 100%;height: 140px;object-fit: contain;margin-bottom: 15px;filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
+  .hero-3d-item-brand { font-family: monospace, sans-serif;font-size: 10px;letter-spacing: 2px;color: var(--silver);text-transform: uppercase;margin-bottom: 4px; }
+  .hero-3d-item-price { font-size: 14px;font-weight: 700;color: #fff; }
+  
+  @media(max-width: 900px) { 
+    body::before { background-attachment: scroll !important; } /* Fix scroll lag */
+    .hero-nav { padding: 20px 20px 10px 20px; } 
+    .hero-nav-left { display: none; } 
+    .hero-logo { position: relative;left: 0;transform: none;top: 0; } 
+    .hero-discover { display: none; } 
+    .brand-marquee { margin-top: 20px; } 
+    .hero-3d-wrap { top: 55%;height: 300px;perspective: 800px; } 
+    .hero-3d-title { top: -40px;font-size: 14px;padding: 6px 16px; } 
+    .hero-3d-carousel { width: 140px;height: 190px; } 
+    .hero-3d-item { width: 140px;height: 190px;padding: 10px; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(20,20,24,0.95) !important; box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important; } 
+    .hero-3d-item img, .hero-3d-item svg { height: 90px; } 
+    .hero-3d-item-brand { font-size: 8px; } 
+    .hero-3d-item-price { font-size: 11px; } 
+  }
+  /* Fix for touch devices (stops carousel from pausing/breaking on tap) */
+  @media (hover: none) {
+    .hero-3d-carousel:hover { animation-play-state: running !important; }
+    .hero-3d-item:hover { background: var(--card-bg) !important; border-color: rgba(255,255,255,0.2) !important; box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important; }
+    .card:hover { transform: none !important; background: var(--card-bg) !important; box-shadow: none !important; }
+    .card:hover .card-img > * { transform: none !important; }
+  }
+
+  .catalog-header { display: flex;justify-content: space-between;align-items: flex-end;padding: 40px 0 30px;margin-bottom: 10px;position: relative;z-index: 20;gap: 20px;flex-wrap: wrap; }
+  .catalog-title { font-size: 28px;font-weight: 700;letter-spacing: -0.5px;color: var(--cream); }
+  .search-wrap { display: flex;align-items: center;background: rgba(20,20,24,.4);border: 1px solid var(--line);border-radius: 999px;padding: 8px 16px;backdrop-filter: blur(20px);transition: border-color 0.3s;flex: 1;max-width: 300px; }
+  .search-wrap:focus-within { border-color: rgba(255,255,255,0.3); }
+  .search-wrap svg { width: 16px;height: 16px;stroke: var(--muted);margin-right: 10px; }
+  .search-wrap input { background: none;border: none;outline: none;color: var(--cream);font-family: inherit;font-size: 13px;width: 100%; }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .filters { display: flex;gap: 8px;flex-wrap: wrap;justify-content: flex-end; }
+  .filter-btn{ padding:9px 20px;border-radius:999px;border:1px solid var(--line);background:rgba(20,20,24,.4);backdrop-filter:blur(20px) saturate(1.2);-webkit-backdrop-filter:blur(20px) saturate(1.2);color:var(--muted);font-size:13px;font-weight:500;transition:all .4s var(--ease-smooth);user-select:none; }
+  .filter-btn:hover{color:var(--cream);border-color:rgba(255,255,255,.25);transform:translateY(-1px)}
+  .filter-btn.active{background:var(--cream);color:var(--bg);border-color:transparent;box-shadow:0 0 20px rgba(245,240,230,.3);transform:translateY(0)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;padding-bottom:80px;position:relative;z-index:20}
+  .card{ background:var(--card-bg);backdrop-filter:blur(32px) saturate(1.4);-webkit-backdrop-filter:blur(32px) saturate(1.4);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .5s var(--ease-smooth);display:flex;flex-direction:column;padding-bottom:22px;border:1px solid var(--line);position:relative;will-change: transform, background; }
+  .card:hover{background:var(--card-bg-hover);border-color:rgba(255,255,255,.3);box-shadow:0 16px 48px rgba(0,0,0,.8);transform:translateY(-5px)}
+  body.winter-mode .card:hover{border-color:rgba(150,190,255,.4);box-shadow:0 16px 48px rgba(0,0,0,.8), inset 0 0 15px rgba(150,190,255,.1);}
+  .card:hover .card-img > *{transform:scale(1.05)}
+  .card.out-of-stock { opacity: 0.6; }
+  @keyframes fadeImgIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+  .card-img{ aspect-ratio:4/5;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.06), transparent 65%);overflow:hidden;position:relative;margin-bottom:16px;display:flex;align-items:center;justify-content:center;padding:24px; }
+  .card-img svg{width:100%;height:100%;max-width:200px;max-height:200px;transition:transform .5s var(--ease-smooth);filter:drop-shadow(0 8px 24px rgba(0,0,0,.5));animation: fadeImgIn 0.5s var(--ease-smooth);}
+  .real-img{ width:100%;height:100%;object-fit:contain;transition:transform .5s var(--ease-smooth);filter:drop-shadow(0 12px 30px rgba(0,0,0,.7));animation: fadeImgIn 0.5s var(--ease-smooth); }
+  .real-img.img-shrink { width: 82%;height: 82%;margin: auto; }
+  .status{font-size:11px;font-weight:600;letter-spacing:.3px;margin-bottom:6px;display:flex;align-items:center;gap:5px;color:var(--green);padding:0 18px}
+  .status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .status.out{color:var(--red)}
+  .status.out::before{background:var(--red);box-shadow:none}
+  .card-brand{font-size:11px;color:var(--silver);font-weight:500;margin-bottom:4px;padding:0 18px;letter-spacing:.5px}
+  .card-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:10px;letter-spacing:.2px;min-height:36px;color:var(--cream);padding:0 18px}
+  .color-row{display:flex;align-items:center;gap:8px;padding:0 18px;margin-bottom:10px;min-height:22px}
+  .color-dot{ width:20px;height:20px;border-radius:50%;border:1.5px solid transparent;padding:0;position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.2), inset 0 0 0 1px rgba(0,0,0,.3);transition:transform .3s var(--ease-bounce), box-shadow .3s var(--ease-smooth);overflow: hidden; }
+  .color-dot:hover{transform:scale(1.2)}
+  .color-dot.active{border-color:var(--cream);box-shadow:0 0 0 2px rgba(20,20,24,.9), 0 0 0 3px var(--cream)}
+  .color-dot.out-stock { opacity: 0.6; }
+  .color-dot.out-stock::after { content: '';position: absolute;top: 50%;left: -10%;width: 120%;height: 2px;background: var(--red);transform: translateY(-50%) rotate(-45deg);box-shadow: 0 0 4px rgba(224,90,90,0.8); }
+  .color-name{font-size:11px;color:var(--muted);margin-left:4px;letter-spacing:.3px;transition:color .3s}
+  .card-price{font-size:15px;font-weight:600;letter-spacing:-.3px;color:var(--cream);padding:0 18px;display:flex;align-items: center;gap: 8px;flex-wrap: wrap;}
+  .price-old { text-decoration: line-through;color: var(--muted);font-size: 13px;font-weight: 400; }
+  .price-new { color: var(--accent); }
+  .discount-badge { background: var(--accent);color: #fff;padding: 2px 6px;border-radius: 4px;font-size: 10px;font-weight: 700;letter-spacing: 0.5px;margin-left: auto; }
+  .modal-overlay{ position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:250;opacity:0;pointer-events:none;transition:opacity .4s var(--ease-smooth);display:flex;align-items:center;justify-content:center;padding:20px; }
+  .modal-overlay.open{opacity:1;pointer-events:auto}
+  .modal{ background:rgba(20,20,24,.85);backdrop-filter:blur(40px) saturate(1.4);-webkit-backdrop-filter:blur(40px) saturate(1.4);border-radius:16px;width:100%;max-width:900px;max-height:90vh;overflow:auto;display:grid;grid-template-columns:1fr 1fr;transform:scale(.92) translateY(10px);transition:transform .4s var(--ease-bounce);border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.9);will-change: transform; }
+  .modal-overlay.open .modal{transform:scale(1) translateY(0)}
+  .modal-img{ background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.06), transparent 65%);aspect-ratio:4/5;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:40px; }
+  .modal-img svg{width:100%;height:100%;max-width:280px;max-height:280px;filter:drop-shadow(0 12px 30px rgba(0,0,0,.5));animation: fadeImgIn 0.5s var(--ease-smooth);}
+  .modal-img .real-img{animation: fadeImgIn 0.5s var(--ease-smooth);width:100%;height:100%;object-fit:contain;}
+  .modal-body{padding:36px;position:relative;display:flex;flex-direction:column}
+  .modal-close{ position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--cream);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .3s var(--ease-smooth); }
+  .modal-close:hover{background:var(--cream);color:var(--bg);border-color:var(--cream);transform:rotate(90deg)}
+  .modal-brand{font-size:12px;color:var(--silver);margin-bottom:6px;letter-spacing:.5px}
+  .modal-title{font-size:20px;font-weight:600;letter-spacing:-.5px;line-height:1.3;margin-bottom:12px;color:var(--cream)}
+  .modal-desc{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+  .modal-price{font-size:26px;font-weight:700;letter-spacing:-1px;margin-bottom:20px;color:var(--cream);display:flex;align-items: center;gap:12px;}
+  .modal-price .price-old { font-size: 18px; }
+  .size-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .sizes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+  .size-btn{ min-width:44px;padding:10px 12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--cream);font-size:13px;font-weight:500;border-radius:8px;transition:all .3s var(--ease-smooth); }
+  .size-btn:hover{border-color:rgba(255,255,255,.4);transform:translateY(-1px)}
+  .size-btn.active{background:var(--cream);color:var(--bg);border-color:transparent}
+  .modal-colors{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+  .modal-colors .color-dot{width:26px;height:26px}
+  .qty-selector { display: flex;align-items: center;border: 1px solid var(--line);border-radius: 8px;width: fit-content;margin-bottom: 20px;background: rgba(255,255,255,.05); }
+  .qty-selector button { background: none;border: none;color: var(--cream);width: 40px;height: 40px;font-size: 18px;cursor: pointer;transition: background 0.2s;display: flex;align-items: center;justify-content: center; }
+  .qty-selector button:hover { background: rgba(255,255,255,0.1); }
+  .qty-selector span { min-width: 40px;text-align: center;font-size: 14px;font-weight: 600;color: var(--cream); }
+  .modal-add{ width:100%;padding:15px;border-radius:8px;background:var(--cream);color:var(--bg);border:none;font-size:14px;font-weight:600;transition:all .3s var(--ease-bounce);margin-top:auto; }
+  .modal-add:hover{background:#fff;transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,240,230,.2)}
+  .modal-add:disabled { background: #444;color: #888;cursor: not-allowed;transform: none;box-shadow: none; }
+  .text-modal { background: rgba(20,20,24,.9);backdrop-filter: blur(40px) saturate(1.4);-webkit-backdrop-filter: blur(40px) saturate(1.4);border: 1px solid var(--line);border-radius: 20px;padding: 40px 36px 32px;max-width: 500px;width: 100%;position: relative;transform: scale(.9) translateY(15px);transition: transform .4s var(--ease-bounce);box-shadow: 0 30px 80px rgba(0,0,0,.9);text-align: center;will-change: transform; }
+  .modal-overlay.open .text-modal { transform: scale(1) translateY(0); }
+  .text-modal .modal-close { position: absolute;top: 14px;right: 14px; }
+  .text-modal h3 { font-size: 22px;font-weight: 700;margin-bottom: 16px;letter-spacing: -.5px;color: var(--cream); }
+  .text-modal p { font-size: 14px;color: var(--muted);line-height: 1.6;margin-bottom: 12px;text-align: left; }
+  .text-modal p:last-child { margin-bottom: 0; }
+  .form-group { margin-bottom: 16px;text-align: left; }
+  .form-group label { display: block;font-size: 11px;font-weight: 600;color: var(--muted);margin-bottom: 6px;text-transform: uppercase;letter-spacing: 1px; }
+  .form-input { width: 100%;background: rgba(255,255,255,0.05);border: 1px solid var(--line);border-radius: 8px;padding: 12px;color: var(--cream);font-family: inherit;font-size: 14px;outline: none;transition: border-color 0.3s; }
+  .form-input:focus { border-color: rgba(255,255,255,0.3); }
+  .pay-methods { display: flex;gap: 10px;margin-top: 8px; }
+  .pay-methods .filter-btn { flex: 1;padding: 12px;text-align: center;border-radius: 8px; }
+  @media(max-width: 560px) { .text-modal { padding: 24px 20px 20px !important; } .pay-methods { flex-direction: column; } .pay-methods .filter-btn { width: 100%; } }
+  .admin-modal { background: rgba(20,20,24,.95);backdrop-filter: blur(40px);border: 1px solid var(--line);border-radius: 16px;width: 100%;max-width: 900px;max-height: 90vh;display: flex;flex-direction: column;transform: scale(.95);transition: transform .3s; }
+  .modal-overlay.open .admin-modal { transform: scale(1); }
+  .admin-head { padding: 20px 24px;border-bottom: 1px solid var(--line);display: flex;justify-content: space-between;align-items: center;}
+  .admin-head h3 { font-size: 18px;color: var(--cream); }
+  .admin-tabs { display: flex;gap: 10px;padding: 10px 24px;border-bottom: 1px solid var(--line); }
+  .admin-tab { background: none;border: none;color: var(--muted);font-size: 14px;font-weight: 600;padding: 8px 16px;cursor: pointer;border-radius: 8px; }
+  .admin-tab.active { background: rgba(255,255,255,0.1);color: var(--cream); }
+  .admin-content { padding: 20px 24px;overflow-y: auto;flex: 1;display: flex;flex-direction: column;gap: 16px; }
+  .promo-create-box { display: flex;gap: 10px;background: rgba(255,255,255,0.03);padding: 16px;border-radius: 8px;border: 1px solid var(--line-soft);flex-wrap: wrap; }
+  .promo-input { background: rgba(0,0,0,0.4);border: 1px solid var(--line);color: var(--cream);padding: 8px 12px;border-radius: 6px;font-size: 13px;outline: none; }
+  .promo-input:focus { border-color: rgba(255,255,255,0.3); }
+  .promo-btn { padding: 8px 16px;background: var(--cream);color: var(--bg);border: none;border-radius: 6px;font-weight: 600;cursor: pointer; }
+  .promo-list-item { display: flex;justify-content: space-between;align-items: center;background: rgba(0,0,0,0.2);padding: 10px 16px;border-radius: 6px;border: 1px solid var(--line-soft); }
+  .promo-code-txt { color: var(--green);font-weight: 700;font-family: monospace;font-size: 14px;letter-spacing: 1px; }
+  .admin-item { display: flex;flex-direction: column;gap: 12px;background: rgba(255,255,255,0.03);padding: 16px;border-radius: 8px;border: 1px solid var(--line-soft); }
+  .admin-item-top { display: flex;justify-content: space-between;align-items: flex-start;gap: 16px;flex-wrap: wrap;}
+  .admin-item-info { flex: 1; }
+  .admin-item-name { font-size: 14px;font-weight: 600;color: var(--cream);margin-bottom: 2px; }
+  .admin-item-brand { font-size: 11px;color: var(--muted); }
+  .admin-item-actions { display: flex;gap: 8px;flex-wrap: wrap; }
+  .admin-action-btn { padding: 6px 12px;border-radius: 6px;font-size: 11px;font-weight: 600;cursor: pointer;transition: all 0.2s;border: none; }
+  .admin-btn-reset-sales { background: rgba(255,255,255,0.1);color: var(--cream); }
+  .admin-btn-reset-sales:hover { background: rgba(255,255,255,0.2); }
+  .admin-btn-stock-all { background: rgba(127,184,127,0.2);color: var(--green); }
+  .admin-btn-stock-all:hover { background: rgba(127,184,127,0.4); }
+  .admin-colors-wrap { display: flex;flex-direction: column;gap: 10px;border-top: 1px solid rgba(255,255,255,0.05);padding-top: 12px; }
+  .admin-color-check { display: flex;align-items: center;gap: 6px;font-size: 11px;color: var(--cream);background: rgba(0,0,0,0.2);padding: 4px 8px;border-radius: 4px;cursor: pointer; }
+  .admin-color-check input { accent-color: var(--green);width: 14px;height: 14px;cursor: pointer; }
+  .admin-color-check.out { color: var(--red);text-decoration: line-through;opacity: 0.7; }
+  .admin-inputs-wrap { display: flex;align-items: center;gap: 12px;flex-wrap: wrap; }
+  .admin-input-group { display: flex;flex-direction: column;gap: 4px; }
+  .admin-input-group label { font-size: 10px;color: var(--muted);text-transform: uppercase;letter-spacing: 1px; }
+  .admin-price-input { width: 90px;background: rgba(0,0,0,0.4);border: 1px solid var(--line);color: var(--cream);padding: 6px 10px;border-radius: 6px;font-family: inherit;font-size: 13px; }
+  .admin-delete-btn { background: none;border: none;color: var(--red);font-size: 20px;cursor: pointer;transition: transform 0.2s;padding: 0 8px; }
+  .admin-delete-btn:hover { transform: scale(1.2); }
+  .cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .4s var(--ease-smooth);z-index:200}
+  .cart-overlay.open{opacity:1;pointer-events:auto}
+  .cart-panel{ position:fixed;top:0;right:0;bottom:0;width:400px;max-width:100%;background:rgba(15,15,18,.9);backdrop-filter:blur(40px) saturate(1.4);-webkit-backdrop-filter:blur(40px) saturate(1.4);transform:translateX(100%);transition:transform .5s var(--ease-bounce);z-index:201;display:flex;flex-direction:column;border-left:1px solid var(--line);box-shadow:-10px 0 40px rgba(0,0,0,.8);will-change: transform; }
+  .cart-panel.open{transform:translateX(0)}
+  .cart-head{display:flex;align-items:center;justify-content:space-between;padding:22px 24px;border-bottom:1px solid var(--line)}
+  .cart-head h3{font-size:16px;font-weight:600;color:var(--cream)}
+  .cart-close{background:none;border:none;font-size:22px;color:var(--muted);transition:color .2s}
+  .cart-close:hover{color:var(--cream)}
+  .cart-items{flex:1;overflow-y:auto;padding:16px 24px}
+  .cart-item{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line-soft);}
+  .cart-item-img{ width:64px;height:80px;border-radius:6px;background:rgba(255,255,255,.03);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:8px; }
+  .cart-item-img svg{width:100%;height:100%}
+  .cart-item-img .real-img{width:100%;height:100%;object-fit:contain}
+  .cart-item-info{flex:1}
+  .cart-item-name{font-size:13px;font-weight:500;margin-bottom:2px;line-height:1.3;color:var(--cream)}
+  .cart-item-size{font-size:11px;color:var(--muted);margin-bottom:8px}
+  .cart-item-price{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--cream)}
+  .cart-item-controls{display:flex;align-items:center;gap:10px}
+  .qty-btn{width:24px;height:24px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--cream);font-size:13px;border-radius:50%;transition:all .2s var(--ease-smooth)}
+  .qty-btn:hover{border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.1)}
+  .qty-val{font-size:12px;min-width:16px;text-align:center;font-weight:600}
+  .cart-remove{margin-left:auto;background:none;border:none;font-size:11px;color:var(--muted);text-decoration:underline;transition:color .2s}
+  .cart-remove:hover{color:var(--cream)}
+  .cart-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+  .cart-empty span{font-size:36px;display:block;margin-bottom:14px}
+  .cart-promo-wrap { display: flex;gap: 8px;margin-bottom: 16px; }
+  .cart-promo-input { flex: 1;background: rgba(255,255,255,0.05);border: 1px solid var(--line);border-radius: 6px;padding: 10px;color: var(--cream);font-size: 13px;outline: none; }
+  .cart-promo-btn { background: var(--cream);color: var(--bg);border: none;padding: 0 16px;border-radius: 6px;font-weight: 600;cursor: pointer; }
+  .promo-success-msg { color: var(--green);font-size: 12px;margin-bottom: 16px;display: none; }
+  .promo-success-msg.show { display: block; }
+  .cart-foot{padding:20px 24px;border-top:1px solid var(--line)}
+  .cart-total{display:flex;justify-content:space-between;font-size:15px;font-weight:600;margin-bottom:16px;color:var(--cream)}
+  .cart-total span:last-child{font-size:19px;color:var(--cream)}
+  .checkout-btn{width:100%;padding:15px;border-radius:8px;background:var(--cream);color:var(--bg);border:none;font-size:14px;font-weight:600;transition:all .3s var(--ease-bounce)}
+  .checkout-btn:hover{background:#fff;transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,240,230,.2)}
+  .checkout-btn:disabled{opacity:.6;cursor:wait;transform:none}
+  .toast{ position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(20,20,24,.9);backdrop-filter:blur(24px);color:var(--cream);border:1px solid var(--line);padding:13px 24px;border-radius:8px;font-size:13px;font-weight:500;z-index:300;transition:all .4s var(--ease-bounce);opacity:0;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.8); }
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  footer{border-top:1px solid var(--line);padding:56px 0 32px}
+  .foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.5fr;gap:40px;margin-bottom:40px}
+  .foot-brand{display:inline-flex;align-items:center;gap:8px;font-size:20px;font-weight:700;margin-bottom:12px;color:var(--cream);cursor:pointer}
+  .foot-col h5{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .foot-col a{display:block;font-size:13px;color:var(--cream);margin-bottom:8px;transition:color .2s;cursor:pointer;opacity:.85}
+  .foot-col a:hover{color:var(--silver);opacity:1}
+  .brand-links-grid { display: grid;grid-template-columns: 1fr 1fr;gap: 8px; }
+  .foot-bottom{border-top:1px solid var(--line);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted)}
+  .foot-bottom a{color:var(--silver);transition:color .2s;cursor:pointer}
+  .foot-bottom a:hover{color:var(--cream)}
+  @media(max-width:900px){ .catalog-header{flex-direction:column;align-items:stretch;gap:16px;} .search-wrap { max-width: 100%; } .filters{justify-content:flex-start;} .modal{grid-template-columns:1fr;max-width:440px} .modal-img{aspect-ratio:1} .foot-grid{grid-template-columns:1fr 1fr;} .admin-modal { max-width: 100%; } .admin-item-actions { width: 100%;justify-content: flex-start;margin-top: 8px; } }
+  @media(max-width:560px){ .wrap{padding:0 16px} .grid{grid-template-columns:1fr 1fr;gap:10px} .card-title{font-size:12px} .card-price{font-size:13px} .color-row{padding:0 12px;gap:6px} .color-dot{width:16px;height:16px} .color-name{display:none} }
+</style>
+</head>
+<body>
+
+<canvas id="snowCanvas"></canvas>
+
+<section class="hero-section">
+  <div class="hero-nav">
+    <div class="hero-nav-left"></div>
+    <div class="hero-logo" id="heroLogo">
+      <div class="logo-icon-wrap">
+        <div class="click-ring"></div>
+        <svg viewBox="0 0 24 24"><path d="M12 2L13.5 9.5L21 11L13.5 12.5L12 20L10.5 12.5L3 11L10.5 9.5L12 2Z"/></svg>
+      </div>
+      SAGE
+    </div>
+    <div class="hero-nav-right">
+      <button class="winter-btn" id="winterToggle" aria-label="Зимовий режим">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="20" y1="4" x2="4" y2="20"></line><line x1="4" y1="4" x2="20" y2="20"></line><path d="M12 2 l2 3 m-2 -3 l-2 3"></path><path d="M12 22 l2 -3 m-2 3 l-2 -3"></path><path d="M2 12 l3 2 m-3 -2 l3 -2"></path><path d="M22 12 l-3 2 m3 -2 l-3 -2"></path></svg>
+      </button>
+      <a href="https://t.me/ThxSoMach" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
+      <a href="https://www.instagram.com/eelijahnx" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg></a>
+      <button class="cart-btn" id="heroCartBtn" aria-label="Кошик"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="fill:none; stroke:#fff;"><path d="M6 2 L6 6 M18 2 L18 6"/><path d="M3 6 L21 6 L19 22 L5 22 Z"/></svg><span class="cart-badge" id="cartCount">0</span></button>
+    </div>
+  </div>
+  <div class="brand-marquee"><div class="marquee-content" id="marqueeContent"></div></div>
+  <div class="hero-3d-wrap"><div class="hero-3d-title">Новинки</div><div class="hero-3d-carousel" id="hero3DCarousel"></div></div>
+  <a href="#catalog" class="hero-discover">Discover More</a>
+</section>
+
+<div class="wrap">
+  <div class="catalog-header">
+    <h2 class="catalog-title">Колекція</h2>
+    <div class="search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg><input type="text" id="searchInput" placeholder="Пошук товару..."></div>
+    <div class="filters" id="filters">
+      <button type="button" class="filter-btn active" data-filter="all">Все</button>
+      <button type="button" class="filter-btn" data-filter="tee">Футболки</button>
+      <button type="button" class="filter-btn" data-filter="hoodie">Худі</button>
+      <button type="button" class="filter-btn" data-filter="sneaker">Кросівки</button>
+      <button type="button" class="filter-btn" data-filter="jacket">Куртки</button>
+      <button type="button" class="filter-btn" data-filter="acc">Аксесуари</button>
+    </div>
+  </div>
+</div>
+
+<section id="catalog"><div class="wrap"><div class="grid" id="grid"></div></div></section>
+
+<footer id="contacts"><div class="wrap">
+  <div class="foot-grid">
+    <div><div class="foot-brand">Sage</div><p style="font-size:13px;color:var(--muted);max-width:320px;line-height:1.6">Місце, де починається твій стиль. Оригінальний одяг та взуття. Умань, Україна.</p></div>
+    <div class="foot-col"><h5>Бренди</h5><div class="brand-links-grid"><a data-brand="C.P. Company">C.P. Company</a><a data-brand="Supreme">Supreme</a><a data-brand="Nike">Nike</a><a data-brand="Balenciaga">Balenciaga</a><a data-brand="Asics">Asics</a><a data-brand="Stone Island">Stone Island</a><a data-brand="Rick Owens">Rick Owens</a><a data-brand="Chrome Hearts">Chrome Hearts</a><a data-brand="E.R.D">E.R.D</a></div></div>
+    <div class="foot-col"><h5>Допомога</h5><a href="#" id="deliveryLink">Доставка</a><a href="#" id="returnLink">Повернення</a></div>
+  </div>
+  <div class="foot-bottom"><span>© 2026 Sage. Всі права захищені.</span><span>Умань · Онлайн</span></div>
+</div></footer>
+
+<div class="modal-overlay" id="modalOverlay"><div class="modal"><div class="modal-img" id="modalImg"></div><div class="modal-body"><button class="modal-close" id="modalCloseBtn">×</button><div class="modal-brand" id="modalBrand"></div><div class="modal-title" id="modalTitle"></div><div class="modal-desc" id="modalDesc"></div><div class="modal-price" id="modalPrice"></div><div class="size-label" id="colorLabel">Колір</div><div class="modal-colors" id="modalColors"></div><div class="size-label">Розмір</div><div class="sizes" id="modalSizes"></div><div class="size-label">Кількість</div><div class="qty-selector"><button id="qtyMinus">-</button><span id="qtyDisplay">1</span><button id="qtyPlus">+</button></div><button class="modal-add" id="modalAdd">Додати в кошик</button></div></div></div>
+
+<div class="modal-overlay" id="checkoutOverlay"><div class="text-modal" style="text-align: left; max-width: 500px;"><button class="modal-close" id="checkoutCloseBtn">×</button><h3 style="text-align:left; margin-bottom:20px;">Оформлення замовлення</h3>
+  <div class="form-group"><label>ПІБ</label><input type="text" id="checkoutName" class="form-input" placeholder="Іванов Іван Іванович" maxlength="120"></div>
+  <div class="form-group"><label>Телефон</label><input type="tel" id="checkoutPhone" class="form-input" placeholder="+380..." maxlength="30"></div>
+  <div class="form-group"><label>Email (не обов'язково)</label><input type="email" id="checkoutEmail" class="form-input" placeholder="mail@example.com" maxlength="120"></div>
+  <div class="form-group"><label>Адреса (Відділення Нової Пошти)</label><input type="text" id="checkoutAddress" class="form-input" placeholder="м. Київ, Відділення №1" maxlength="240"></div>
+  <div class="form-group" style="margin-top: 24px;"><label>Спосіб оплати</label><div class="pay-methods"><button class="filter-btn active" id="payCashBtn" data-pay="cash">Оплата на пошті</button><button class="filter-btn" id="payOnlineBtn" data-pay="online">Онлайн оплата</button></div></div>
+  <button class="modal-add" id="submitOrderBtn" style="margin-top: 24px;">Підтвердити замовлення</button>
+</div></div>
+
+<div class="modal-overlay" id="returnOverlay"><div class="text-modal"><button class="modal-close" id="returnCloseBtn">×</button><h3 style="text-align:left; margin-bottom:20px;">Повернення та обмін</h3><p>Якщо товар не підійшов:</p><p>Для непродовольчого товару належної якості можна звернутися щодо обміну протягом 14 днів, без урахування дня купівлі.</p><p>Товар має зберегти товарний вигляд, споживчі властивості, пломби й ярлики та не мати слідів використання.</p><p>Якщо аналогічного товару для обміну немає, можна обрати інший товар з перерахунком ціни або вимагати повернення коштів.</p></div></div>
+
+<div class="modal-overlay" id="deliveryOverlay"><div class="text-modal"><button class="modal-close" id="deliveryCloseBtn">×</button><h3 style="text-align:left; margin-bottom:20px;">Доставка</h3><p>Відправлення замовлень відбувається перевізником "Нова пошта" згідно з тарифами перевізника.</p><p>Відправлення здійснюється за рахунок одержувача замовлення.</p><p>У разі повторних замовлень на сайті можливе відправлення за рахунок відправника.</p></div></div>
+
+<div class="modal-overlay" id="adminOverlay"><div class="admin-modal">
+  <div class="admin-head"><h3>Адмін-панель</h3><button class="modal-close" id="adminCloseBtn" style="position:static; width:28px; height:28px;">×</button></div>
+  <div class="admin-tabs"><button class="admin-tab active" id="tabProducts" data-tab="products">Товари</button><button class="admin-tab" id="tabPromos" data-tab="promos">Промокоди</button></div>
+  <div class="admin-content" id="adminContentProducts"></div>
+  <div class="admin-content" id="adminContentPromos" style="display:none;"><div class="promo-create-box"><input type="text" id="newPromoCode" class="promo-input" placeholder="Код (напр. SAGE10)" style="flex:1;" maxlength="32"><input type="number" id="newPromoDiscount" class="promo-input" placeholder="% знижки" style="width:100px;" min="1" max="100"><button class="promo-btn" id="createPromoBtn">Створити</button></div><div id="promoList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+</div></div>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-head"><h3>Кошик</h3><button class="cart-close" id="cartCloseBtn">×</button></div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="cart-promo-wrap"><input type="text" id="promoInput" class="cart-promo-input" placeholder="Промокод" maxlength="32"><button class="cart-promo-btn" id="applyPromoBtn">ОК</button></div>
+    <div class="promo-success-msg" id="promoSuccessMsg">Промокод застосовано!</div>
+    <div class="cart-total"><span>Разом</span><span id="cartTotal">0 ₴</span></div>
+    <button class="checkout-btn" id="checkoutBtn">Оформити замовлення</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ===== API URL ===== */
+const API_URL = 'https://shy-glitter-68a5.barsuknoname.workers.dev';
+
+/* ===== УТИЛІТИ ===== */
+function esc(s){
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function safeColor(c){
+  var v = String(c || '#000').trim();
+  if (/^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?([0-9a-fA-F]{2})?$/.test(v)) return v;
+  if (/^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/.test(v)) {
+    var m = v.match(/\d{1,3}/g);
+    if (m && m.every(function(n){ return Number(n) <= 255; })) return v;
+  }
+  if (/^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*(0|1|0?\.\d+)\s*\)$/.test(v)) {
+    var m2 = v.match(/\d{1,3}/g);
+    if (m2 && m2.every(function(n){ return Number(n) <= 255; })) return v;
+  }
+  return '#000';
+}
+
+/* ===== ДЕФОЛТНІ ТОВАРИ ===== */
+const DEFAULT_PRODUCTS = [
+  {id:1, cat:'hoodie', brand:'Stone Island', name:'WARP STRIPE HOODED SWEATSHIRT', desc:'Худі з капюшоном, у смужку. Оригінал.', price:3080, discount:0, sizes:['S','M','L','XL'], type:'hoodie', colors:[
+    {name:'White', color:'#e8e4dc', img:'https://msbadge.com/cdn/shop/files/AE8AE3FB-F883-4FDD-8AF3-14F92F3B85AA.png?v=1751279479', inStock: true},
+    {name:'Black', color:'#3a3844', img:'https://i.imgur.com/1IG8w41.png', imgClass:'img-shrink', inStock: true}
+  ]},
+  {id:2, cat:'hoodie', brand:'Stone Island', name:'ZIP-UP HOODIE', desc:'Худі на блискавці. Оригінал.', price:2700, discount:0, sizes:['S','M','L','XL'], type:'hoodie', zip:true, colors:[
+    {name:'Black', color:'#1a1a1a', img:'https://i.imgur.com/5C4HACc.png', inStock: true},
+    {name:'White', color:'#ffffff', img:'https://i.imgur.com/8ksNlkB.png', inStock: true},
+    {name:'Blue', color:'#1c2841', img:'https://i.imgur.com/iZHFjT9.png', inStock: true},
+    {name:'Light Pink', color:'#f5cbc3', img:'https://i.imgur.com/YPkr8tW.png', inStock: true},
+    {name:'Olive', color:'#7a7458', img:'https://i.imgur.com/PJu4oO3.png', inStock: true},
+    {name:'Grey Melange', color:'#a8a8a8', img:'https://i.imgur.com/bQKK6gY.png', inStock: true}
+  ]},
+  {id:3, cat:'sneaker', brand:'Dior', name:'B27 UPTOWN LOW-TOP SNEAKER', desc:'Кросівки низькі. Оригінал.', price:4120, discount:0, sizes:['40','41','42','43','44','45'], type:'sneaker', colors:[{name:'Black/Beige', color:'#3a3844', accent:'#c4b8a4', inStock: true}]},
+  {id:4, cat:'sneaker', brand:'Nike', name:'AIR FORCE 1 LOW RETRO WHITE', desc:'Кросівки низькі, білий. Оригінал.', price:5800, discount:0, sizes:['40','41','42','43','44','45'], type:'sneaker', colors:[
+    {name:'Triple White', color:'#e8e4dc', accent:'#8a8a96', img:'https://i.imgur.com/HLSaebM.png', inStock: true},
+    {name:'Black', color:'#1a1a1a', accent:'#8a8a96', img:'https://i.imgur.com/oaizmNA.png', inStock: true}
+  ]},
+  {id:5, cat:'sneaker', brand:'Adidas', name:'SAMBA OG BLACK/WHITE', desc:'Кросівки, чорно-білі, замша. Оригінал.', price:4900, discount:0, sizes:['40','41','42','43','44','45'], type:'sneaker', colors:[
+    {name:'Black/White', color:'#2e2c38', accent:'#e8e4dc', inStock: true},
+    {name:'White/Black', color:'#e8e4dc', accent:'#2e2c38', inStock: true},
+    {name:'Green/White', color:'#4a7c59', accent:'#e8e4dc', inStock: true}
+  ]},
+  {id:6, cat:'jacket', brand:'Moncler', name:'X SPIDERMAN VIOLIER PADDED JACKET', desc:'Пухова куртка. Оригінал.', price:3570, discount:0, sizes:['S','M','L','XL'], type:'jacket', colors:[
+    {name:'Black', color:'#2e2c38', inStock: true},{name:'Navy', color:'#1c2841', inStock: true},{name:'White', color:'#e8e4dc', inStock: true},{name:'Red', color:'#b02a2a', inStock: true}
+  ]},
+  {id:7, cat:'jacket', brand:'Stone Island', name:'NYLON METAL JACKET', desc:'Куртка, водовідштовхувальна. Оригінал.', price:24500, discount:0, sizes:['S','M','L','XL'], type:'jacket', colors:[
+    {name:'Khaki', color:'#7a7458', inStock: true},{name:'Grey', color:'#8a8a96', inStock: true}
+  ]},
+  {id:8, cat:'tee', brand:'Stone Island', name:'SHADOW PROJECT TEE', desc:'Футболка. Оригінал.', price:5400, discount:0, sizes:['S','M','L','XL'], type:'tee', colors:[{name:'White', color:'#e8e4dc', inStock: true}]},
+  {id:9, cat:'acc', brand:'Stone Island', name:'COMPASS BADGE CAP', desc:'Кепка з фірмовим значком. Оригінал.', price:3900, discount:0, sizes:['One Size'], type:'acc_cap', colors:[
+    {name:'Black', color:'#2e2c38', inStock: true},{name:'Beige', color:'#c4b8a4', inStock: true}
+  ]},
+  {id:10, cat:'acc', brand:'Nike', name:'TECH BACKPACK', desc:'Спортивний рюкзак. Оригінал.', price:4800, discount:0, sizes:['One Size'], type:'acc_bag', colors:[{name:'Black', color:'#2e2c38', inStock: true}]},
+  {id:11, cat:'hoodie', brand:'E.R.D', name:'SLOGAN PRINT HOODIE', desc:'Худі з принтом. Оригінал.', price:9800, discount:0, sizes:['S','M','L','XL'], type:'hoodie', salesCount: 50, colors:[
+    {name:'Black', color:'#1a1a1a', img:'https://i.imgur.com/iaIUj2P.png', inStock: true},
+    {name:'White', color:'#e8e4dc', img:'https://i.imgur.com/XUBdPjB.png', inStock: true}
+  ]},
+  {id:12, cat:'tee', brand:'E.R.D', name:'PUNK TEE', desc:'Футболка з агресивним принтом. Оригінал.', price:4200, discount:0, sizes:['S','M','L','XL'], type:'tee', salesCount: 45, colors:[{name:'White', color:'#e8e4dc', img:'https://i.imgur.com/h7PK7F2.png', inStock: true}]},
+  {id:13, cat:'jacket', brand:'E.R.D', name:'DESTROYED DENIM JACKET', desc:'Джинсова куртка. Оригінал.', price:18500, discount:0, sizes:['S','M','L','XL'], type:'jacket', salesCount: 30, colors:[
+    {name:'Blue', color:'#4a6080', inStock: true},{name:'Light Blue', color:'#7ca1c4', inStock: true},{name:'Black Denim', color:'#1f2022', inStock: true}
+  ]}
+];
+
+let PRODUCTS = [];
+let PROMO_CODES = [];
+let activePromo = null;
+let selectedPayment = 'cash';
+let adminToken = null;
+
+/* === ЗАГРУЗКА === */
+async function loadData() {
+  try {
+    const res = await fetch(API_URL + '/api/products');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data)) {
+        PRODUCTS = data;
+        return;
+      }
+    }
+  } catch(e) { console.warn('Сервер недоступний, беремо дефолт', e); }
+  
+  PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)).map(function(p){
+    p.salesCount = p.salesCount || 0;
+    return p;
+  });
+  saveData(); 
+}
+
+/* === СОХРАНЕНИЕ === */
+async function saveData() {
+  if (!adminToken) return;
+  try {
+    await fetch(API_URL + '/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + adminToken
+      },
+      body: JSON.stringify(PRODUCTS)
+    });
+  } catch(e) {
+    console.error('Помилка збереження', e);
+    showToast('Помилка синхронізації!');
+  }
+}
+
+function getProductPrice(p) {
+  if (p.discount && p.discount > 0) return Math.round(p.price - (p.price * p.discount / 100));
+  return p.price;
+}
+
+const BRANDS = ['C.P. COMPANY', 'SUPREME', 'NIKE', 'BALENCIAGA', 'ASICS', 'STONE ISLAND', 'RICK OWENS', 'CHROME HEARTS', 'E.R.D'];
+function initMarquee() {
+  var box = document.getElementById('marqueeContent');
+  if (!box) return;
+  var html = '';
+  for (let i = 0; i < 4; i++) BRANDS.forEach(function(b){ html += '<span>' + esc(b) + '</span><span class="diamond">♦</span>'; });
+  box.innerHTML = html;
+}
+document.getElementById('heroLogo').addEventListener('click', function() {
+  this.classList.remove('clicked'); void this.offsetWidth; this.classList.add('clicked');
+});
+window.searchBrand = function(brand) {
+  document.getElementById('searchInput').value = brand; searchQuery = brand; applyFilter('all');
+  document.getElementById('catalog').scrollIntoView({behavior:'smooth'});
+};
+
+/* === СНІГ === */
+const canvas = document.getElementById('snowCanvas');
+const ctx = canvas.getContext('2d');
+let flakes = [];
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas); resizeCanvas();
+function createSnow() {
+  flakes = Array.from({length: 120}, function(){
+    return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 0.5, d: Math.random() * 0.6 - 0.3, speed: Math.random() * 1 + 0.4, opacity: Math.random() * 0.5 + 0.2 };
+  });
+}
+function drawSnow() {
+  if(!document.body.classList.contains('winter-mode')) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  flakes.forEach(function(f){
+    ctx.fillStyle = 'rgba(200, 230, 255, ' + f.opacity + ')';
+    ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+    f.y += f.speed; f.x += f.d + Math.sin(f.y / 40) * 0.4;
+    if(f.y > canvas.height) { f.y = -10; f.x = Math.random() * canvas.width; }
+    if(f.x > canvas.width) { f.x = 0; } if(f.x < 0) { f.x = canvas.width; }
+  });
+  requestAnimationFrame(drawSnow);
+}
+function toggleWinterMode() {
+  document.body.classList.toggle('winter-mode');
+  const isWinter = document.body.classList.contains('winter-mode');
+  localStorage.setItem('sage_winter', isWinter);
+  if(isWinter) { createSnow(); requestAnimationFrame(drawSnow); }
+  else { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+}
+document.getElementById('winterToggle').addEventListener('click', toggleWinterMode);
+if(localStorage.getItem('sage_winter') === 'true') { document.body.classList.add('winter-mode'); createSnow(); requestAnimationFrame(drawSnow); }
+
+/* === SVG === */
+function svgHoodie(color, isZip){
+  var c = safeColor(color);
+  var s = '<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" fill="none">';
+  s += '<path d="M70 55 Q70 30 100 30 Q130 30 130 55 L145 70 L160 130 L145 138 L145 210 L55 210 L55 138 L40 130 L55 70 Z" fill="'+c+'" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5"/>';
+  s += '<path d="M70 55 Q100 75 130 55" stroke="#f0ece4" stroke-opacity="0.3" stroke-width="1.5" fill="none"/>';
+  s += '<rect x="85" y="140" width="30" height="40" rx="4" fill="#f0ece4" opacity="0.08"/>';
+  s += '<path d="M50 90 L30 140 M150 90 L170 140" stroke="'+c+'" stroke-width="16" stroke-linecap="round"/>';
+  if(isZip){ s += '<line x1="100" y1="55" x2="100" y2="210" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="1.5" stroke-dasharray="3 3"/>'; }
+  s += '</svg>'; return s;
+}
+function svgSneaker(color, accent){
+  var c = safeColor(color), a = safeColor(accent || '#8a8a96');
+  var s = '<svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg" fill="none">';
+  s += '<path d="M25 115 L25 85 Q25 70 40 70 L90 70 L130 40 Q145 30 165 35 L195 50 Q215 60 218 85 L218 105 Q218 115 208 115 Z" fill="'+c+'" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5"/>';
+  s += '<path d="M25 115 L218 115 L218 130 Q218 140 208 140 L35 140 Q25 140 25 130 Z" fill="'+a+'" stroke="#f0ece4" stroke-opacity="0.2" stroke-width="1.5"/>';
+  s += '<line x1="60" y1="80" x2="105" y2="80" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="1.5"/>';
+  s += '<line x1="60" y1="90" x2="110" y2="90" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="1.5"/>';
+  s += '<line x1="65" y1="100" x2="115" y2="100" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="1.5"/>';
+  s += '</svg>'; return s;
+}
+function svgJacket(color){
+  var c = safeColor(color);
+  var s = '<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" fill="none">';
+  s += '<path d="M65 55 L55 50 L40 70 L40 210 L160 210 L160 70 L145 50 L135 55 L120 40 L100 55 L80 40 Z" fill="'+c+'" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5"/>';
+  s += '<path d="M80 40 L100 55 L120 40" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="2" fill="none"/>';
+  s += '<line x1="100" y1="55" x2="100" y2="210" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="1.5"/>';
+  s += '<circle cx="100" cy="70" r="2.5" fill="#f0ece4" opacity="0.5"/><circle cx="100" cy="90" r="2.5" fill="#f0ece4" opacity="0.5"/><circle cx="100" cy="110" r="2.5" fill="#f0ece4" opacity="0.5"/>';
+  s += '<rect x="55" y="120" width="30" height="35" rx="3" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5" fill="none"/>';
+  s += '<rect x="115" y="120" width="30" height="35" rx="3" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5" fill="none"/>';
+  s += '</svg>'; return s;
+}
+function svgTee(color){
+  var c = safeColor(color);
+  var s = '<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" fill="none">';
+  s += '<path d="M70 50 L50 60 L35 100 L55 110 L55 200 L145 200 L145 110 L165 100 L150 60 L130 50 L100 70 Z" fill="'+c+'" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5"/>';
+  s += '<path d="M70 50 Q100 75 130 50" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="2" fill="none"/>';
+  s += '</svg>'; return s;
+}
+function svgCap(color){
+  var c = safeColor(color);
+  var s = '<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" fill="none">';
+  s += '<path d="M50 120 Q50 70 100 70 Q150 70 150 120 L160 130 Q150 150 100 150 Q50 150 40 130 Z" fill="'+c+'" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5"/>';
+  s += '<path d="M50 120 Q100 140 150 120" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="2" fill="none"/>';
+  s += '<circle cx="100" cy="90" r="10" stroke="#f0ece4" stroke-opacity="0.4" stroke-width="1.5" fill="none"/>';
+  s += '</svg>'; return s;
+}
+function svgBag(color){
+  var c = safeColor(color);
+  var s = '<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" fill="none">';
+  s += '<rect x="50" y="80" width="100" height="120" rx="15" fill="'+c+'" stroke="#f0ece4" stroke-opacity="0.25" stroke-width="1.5"/>';
+  s += '<path d="M75 80 Q75 50 100 50 Q125 50 125 80" stroke="#f0ece4" stroke-opacity="0.35" stroke-width="3" fill="none"/>';
+  s += '</svg>'; return s;
+}
+
+let selectedColors = {};
+let cart = [];
+let currentFilter = 'all';
+let searchQuery = '';
+let activeProduct = null;
+let activeSize = null;
+let activeColorIdx = 0;
+let selectedQty = 1;
+
+/* === КОШИК === */
+function loadCart(){
+  try { var saved = JSON.parse(localStorage.getItem('sage_cart_v2') || '[]'); if (Array.isArray(saved)) cart = saved; } catch(e){ cart = []; }
+  try { var promo = JSON.parse(localStorage.getItem('sage_active_promo') || 'null'); if (promo && promo.code && typeof promo.discount === 'number') activePromo = promo; } catch(e){ activePromo = null; }
+}
+function saveCart(){
+  try {
+    localStorage.setItem('sage_cart_v2', JSON.stringify(cart));
+    if (activePromo) localStorage.setItem('sage_active_promo', JSON.stringify(activePromo));
+    else localStorage.removeItem('sage_active_promo');
+  } catch(e){}
+  updateCartCount();
+}
+function updateCartCount(){
+  var count = 0;
+  for(var i = 0; i < cart.length; i++) count += cart[i].qty;
+  var el = document.getElementById('cartCount');
+  if(el) el.textContent = count;
+}
+
+function fmt(n){ return Number(n).toLocaleString('uk-UA').replace(/,/g,' ') + ' ₴'; }
+function getColorIdx(p){ return (selectedColors[p.id] != null) ? selectedColors[p.id] : 0; }
+
+function productSVG(p, colorIdx){
+  var idx = (colorIdx != null) ? colorIdx : getColorIdx(p);
+  var col = p.colors && p.colors[idx];
+  if(!col) return '';
+  if(col.img){
+    var extra = col.imgClass ? ' ' + col.imgClass : '';
+    return '<img src="' + esc(col.img) + '" alt="" class="real-img' + extra + '">';
+  }
+  var color = safeColor(col.color);
+  var accent = safeColor(col.accent || '#8a8a96');
+  if(p.type === 'hoodie')  return svgHoodie(color, p.zip);
+  if(p.type === 'sneaker') return svgSneaker(color, accent);
+  if(p.type === 'jacket')  return svgJacket(color);
+  if(p.type === 'tee')     return svgTee(color);
+  if(p.type === 'acc_cap') return svgCap(color);
+  if(p.type === 'acc_bag') return svgBag(color);
+  return svgHoodie(color, false);
+}
+
+function renderHeroNewArrivals() {
+  var carousel = document.getElementById('hero3DCarousel');
+  if(!carousel) return;
+  
+  /* Оптимізація: на мобільних показуємо 4 картки замість 6 */
+  var limit = window.innerWidth <= 900 ? 4 : 6;
+  var items = PRODUCTS.slice(-limit).reverse();
+  
+  var html = '';
+  var angleStep = items.length ? 360 / items.length : 0;
+  var radius = window.innerWidth <= 900 ? 280 : 480;
+  for(var i = 0; i < items.length; i++) {
+    var p = items[i], cidx = getColorIdx(p), finalPrice = getProductPrice(p), angle = i * angleStep;
+    html += '<div class="hero-3d-item" data-id="' + p.id + '" style="transform: rotateY(' + angle + 'deg) translateZ(' + radius + 'px);">';
+    html += '<div style="width:100%;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:15px;">' + productSVG(p, cidx) + '</div>';
+    html += '<div class="hero-3d-item-brand">' + esc(p.brand) + '</div>';
+    html += '<div class="hero-3d-item-price">' + fmt(finalPrice) + '</div>';
+    html += '</div>';
+  }
+  carousel.innerHTML = html;
+  if (!carousel._bound) {
+    carousel._bound = true;
+    carousel.addEventListener('click', function(e){
+      var el = e.target.closest('.hero-3d-item');
+      if (!el) return;
+      var id = parseInt(el.getAttribute('data-id'), 10);
+      if (!isNaN(id)) window.openModal(id);
+    });
+  }
+}
+
+function renderGrid(){
+  var grid = document.getElementById('grid');
+  if(!grid) return;
+  var items = currentFilter === 'all' ? PRODUCTS.slice() : PRODUCTS.filter(function(p){ return p.cat === currentFilter; });
+  if(searchQuery.trim()){
+    var q = searchQuery.toLowerCase();
+    items = items.filter(function(p){
+      return (p.name || '').toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q) || (p.desc || '').toLowerCase().includes(q);
+    });
+  }
+  if(items.length === 0){
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted)">Нічого не знайдено.</div>';
+    return;
+  }
+  var html = '';
+  for(var i = 0; i < items.length; i++){
+    var p = items[i];
+    var cidx = getColorIdx(p);
+    var currentColor = p.colors[cidx] || p.colors[0];
+    var allOut = p.colors.every(function(c){ return !c.inStock; });
+    var currentOut = !currentColor.inStock;
+    var finalPrice = getProductPrice(p);
+    html += '<div class="card ' + (allOut ? 'out-of-stock' : '') + '" data-id="' + p.id + '">';
+    html += '<div class="card-img">' + productSVG(p, cidx) + '</div>';
+    if (allOut) html += '<div class="status out">Немає в наявності</div>';
+    else if (currentOut) html += '<div class="status out">Цей колір відсутній</div>';
+    else html += '<div class="status">В наявності</div>';
+    html += '<div class="card-brand">' + esc(p.brand) + '</div>';
+    html += '<div class="card-title">' + esc(p.name) + '</div>';
+    if(p.colors.length > 1){
+      html += '<div class="color-row">';
+      for(var c = 0; c < p.colors.length; c++){
+        var cls = (c === cidx) ? ' active' : '';
+        var outCls = !p.colors[c].inStock ? ' out-stock' : '';
+        html += '<button class="color-dot' + cls + outCls + '" style="background:' + safeColor(p.colors[c].color) + '" data-cid="' + c + '" title="' + esc(p.colors[c].name) + '"></button>';
+      }
+      html += '<span class="color-name">' + esc(currentColor.name) + '</span></div>';
+    } else {
+      html += '<div class="color-row"><span class="color-name">' + esc(currentColor.name) + '</span></div>';
+    }
+    html += '<div class="card-price">';
+    if (p.discount > 0) {
+      html += '<span class="price-new">' + fmt(finalPrice) + '</span><span class="price-old">' + fmt(p.price) + '</span><span class="discount-badge">-' + esc(p.discount) + '%</span>';
+    } else { html += fmt(p.price); }
+    html += '</div></div>';
+  }
+  grid.innerHTML = html;
+
+  var cards = grid.querySelectorAll('.card');
+  for(var j = 0; j < cards.length; j++){
+    (function(card, prod){
+      card.addEventListener('click', function(){ window.openModal(prod.id); });
+      var dots = card.querySelectorAll('.color-dot');
+      for(var d = 0; d < dots.length; d++){
+        (function(dot){
+          dot.addEventListener('click', function(e){
+            e.stopPropagation();
+            var cid = parseInt(dot.getAttribute('data-cid'), 10);
+            selectedColors[prod.id] = cid;
+            var newColor = prod.colors[cid];
+            card.querySelector('.card-img').innerHTML = productSVG(prod, cid);
+            var statusEl = card.querySelector('.status');
+            if (!newColor.inStock) { statusEl.className = 'status out'; statusEl.textContent = 'Цей колір відсутній'; }
+            else if (prod.colors.every(function(c){ return !c.inStock; })) { statusEl.className = 'status out'; statusEl.textContent = 'Немає в наявності'; }
+            else { statusEl.className = 'status'; statusEl.textContent = 'В наявності'; }
+            var allDots = card.querySelectorAll('.color-dot');
+            for(var k = 0; k < allDots.length; k++){
+              if(k === cid) allDots[k].classList.add('active'); else allDots[k].classList.remove('active');
+            }
+            var nameEl = card.querySelector('.color-name');
+            if(nameEl) nameEl.textContent = prod.colors[cid].name;
+          });
+        })(dots[d]);
+      }
+    })(cards[j], items[j]);
+  }
+}
+
+function applyFilter(filter){
+  currentFilter = filter;
+  var btns = document.querySelectorAll('.filter-btn');
+  for(var i = 0; i < btns.length; i++){
+    if(btns[i].getAttribute('data-filter') === filter) btns[i].classList.add('active');
+    else btns[i].classList.remove('active');
+  }
+  renderGrid();
+}
+
+var filtersEl = document.getElementById('filters');
+if(filtersEl){ filtersEl.addEventListener('click', function(e){ var btn = e.target.closest('.filter-btn'); if(!btn) return; var f = btn.getAttribute('data-filter'); if(f) applyFilter(f); }); }
+
+var searchInput = document.getElementById('searchInput');
+if(searchInput){ searchInput.addEventListener('input', function(e){ searchQuery = e.target.value; renderGrid(); }); }
+
+window.openModal = function(id){
+  var p = null;
+  for(var i = 0; i < PRODUCTS.length; i++){ if(PRODUCTS[i].id === id){ p = PRODUCTS[i]; break; } }
+  if(!p) return;
+  activeProduct = p;
+  activeSize = p.sizes.length === 1 ? p.sizes[0] : null;
+  activeColorIdx = getColorIdx(p);
+  selectedQty = 1;
+  document.getElementById('qtyDisplay').textContent = selectedQty;
+  document.getElementById('modalImg').innerHTML = productSVG(p, activeColorIdx);
+  document.getElementById('modalBrand').textContent = p.brand;
+  document.getElementById('modalTitle').textContent = p.name;
+  document.getElementById('modalDesc').textContent = p.desc;
+  var finalPrice = getProductPrice(p);
+  var priceHtml = '';
+  if (p.discount > 0) priceHtml = '<span class="price-new">' + fmt(finalPrice) + '</span><span class="price-old">' + fmt(p.price) + '</span>';
+  else priceHtml = fmt(p.price);
+  document.getElementById('modalPrice').innerHTML = priceHtml;
+
+  var colorLabel = document.getElementById('colorLabel');
+  var colorsBox = document.getElementById('modalColors');
+  colorsBox.innerHTML = '';
+  if(p.colors.length > 1){
+    colorLabel.style.display = 'block';
+    colorLabel.textContent = 'Колір: ' + p.colors[activeColorIdx].name;
+    for(var c = 0; c < p.colors.length; c++){
+      var dot = document.createElement('button');
+      dot.className = 'color-dot' + (c === activeColorIdx ? ' active' : '') + (!p.colors[c].inStock ? ' out-stock' : '');
+      dot.style.background = safeColor(p.colors[c].color);
+      dot.setAttribute('data-cid', c);
+      dot.title = p.colors[c].name;
+      dot.addEventListener('click', function(){
+        var cid = parseInt(this.getAttribute('data-cid'), 10);
+        activeColorIdx = cid;
+        selectedColors[p.id] = cid;
+        document.getElementById('modalImg').innerHTML = productSVG(p, cid);
+        colorLabel.textContent = 'Колір: ' + p.colors[cid].name;
+        var all = colorsBox.querySelectorAll('.color-dot');
+        for(var k = 0; k < all.length; k++){
+          if(k === cid) all[k].classList.add('active'); else all[k].classList.remove('active');
+        }
+        updateModalBtn(p, cid);
+      });
+      colorsBox.appendChild(dot);
+    }
+  } else { colorLabel.style.display = 'none'; }
+
+  var sizesBox = document.getElementById('modalSizes');
+  sizesBox.innerHTML = '';
+  for(var k = 0; k < p.sizes.length; k++){
+    var s = p.sizes[k];
+    var b = document.createElement('button');
+    b.className = 'size-btn' + (s === activeSize ? ' active' : '');
+    b.textContent = s;
+    b.setAttribute('data-size', s);
+    b.addEventListener('click', function(){
+      var sz = this.getAttribute('data-size');
+      activeSize = sz;
+      var all = sizesBox.querySelectorAll('.size-btn');
+      for(var m = 0; m < all.length; m++){
+        if(all[m].getAttribute('data-size') === sz) all[m].classList.add('active');
+        else all[m].classList.remove('active');
+      }
+    });
+    sizesBox.appendChild(b);
+  }
+  updateModalBtn(p, activeColorIdx);
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+function updateModalBtn(p, cidx) {
+  var addBtn = document.getElementById('modalAdd');
+  var colInStock = p.colors[cidx].inStock;
+  var allOut = p.colors.every(function(c){ return !c.inStock; });
+  if (!colInStock) { addBtn.textContent = 'Цей колір відсутній'; addBtn.disabled = true; }
+  else if (allOut) { addBtn.textContent = 'Немає в наявності'; addBtn.disabled = true; }
+  else { addBtn.textContent = 'Додати в кошик'; addBtn.disabled = false; }
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  activeProduct = null; activeSize = null;
+}
+
+function addToCart(id, size, colorIdx, qty){
+  var p = null;
+  for(var i = 0; i < PRODUCTS.length; i++){ if(PRODUCTS[i].id === id){ p = PRODUCTS[i]; break; } }
+  if(!p) return;
+  var cidx = (colorIdx != null) ? colorIdx : getColorIdx(p);
+  var col = p.colors[cidx];
+  if(!col || !col.inStock) return;
+  var existing = null;
+  for(var j = 0; j < cart.length; j++){
+    if(cart[j].id === id && cart[j].size === size && cart[j].colorIdx === cidx){ existing = cart[j]; break; }
+  }
+  if(existing){ existing.qty += qty; }
+  else {
+    cart.push({ id:p.id, name:p.name, brand:p.brand, price:p.price, discount:p.discount, type:p.type, zip:p.zip, colors:p.colors, colorIdx:cidx, colorName:col.name, size:size, qty:qty });
+  }
+  saveCart();
+  showToast(p.name.split(' ').slice(0,3).join(' ') + ' (' + col.name + ', ' + size + ') — ' + qty + ' шт.');
+  renderCart();
+}
+
+function removeFromCart(idx){ cart.splice(idx,1); if(cart.length === 0) activePromo = null; saveCart(); renderCart(); }
+function changeQty(idx, delta){
+  if(!cart[idx]) return;
+  cart[idx].qty += delta;
+  if(cart[idx].qty <= 0){ removeFromCart(idx); return; }
+  saveCart(); renderCart();
+}
+
+function renderCart(){
+  var box = document.getElementById('cartItems');
+  if(!box) return;
+  if(cart.length === 0){
+    box.innerHTML = '<div class="cart-empty"><span>🛍</span>Кошик порожній</div>';
+    activePromo = null;
+    var msg = document.getElementById('promoSuccessMsg');
+    if (msg) msg.classList.remove('show');
+    saveCart();
+  } else {
+    var html = '';
+    for(var i = 0; i < cart.length; i++){
+      var x = cart[i];
+      var imgHtml = productSVG({ type:x.type, zip:x.zip, colors:x.colors, id:x.id }, x.colorIdx);
+      var meta = x.brand + ' · ' + x.colorName + ' · Розмір ' + x.size;
+      var itemPrice = getProductPrice(x);
+      html += '<div class="cart-item"><div class="cart-item-img">' + imgHtml + '</div><div class="cart-item-info"><div class="cart-item-name">' + esc(x.name) + '</div><div class="cart-item-size">' + esc(meta) + '</div><div class="cart-item-price">' + fmt(itemPrice) + '</div><div class="cart-item-controls"><button class="qty-btn" data-act="minus" data-idx="' + i + '">−</button><span class="qty-val">' + x.qty + '</span><button class="qty-btn" data-act="plus" data-idx="' + i + '">+</button><button class="cart-remove" data-act="remove" data-idx="' + i + '">видалити</button></div></div></div>';
+    }
+    box.innerHTML = html;
+    box.querySelectorAll('button[data-act]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var act = btn.getAttribute('data-act');
+        var idx = parseInt(btn.getAttribute('data-idx'), 10);
+        if(act === 'minus') changeQty(idx, -1);
+        else if(act === 'plus') changeQty(idx, 1);
+        else if(act === 'remove') removeFromCart(idx);
+      });
+    });
+  }
+  var subtotal = 0;
+  for(var k = 0; k < cart.length; k++) subtotal += getProductPrice(cart[k]) * cart[k].qty;
+  var finalTotal = subtotal;
+  if (activePromo) finalTotal = subtotal - (subtotal * activePromo.discount / 100);
+  var totalEl = document.getElementById('cartTotal');
+  if(totalEl) totalEl.textContent = fmt(finalTotal);
+  updateCartCount();
+  if (activePromo) {
+    var msgEl = document.getElementById('promoSuccessMsg');
+    if (msgEl) {
+      msgEl.classList.add('show');
+      msgEl.textContent = 'Промокод ' + activePromo.code + ' застосовано (-' + activePromo.discount + '%)';
+    }
+  }
+}
+
+function toggleCart(){
+  document.getElementById('cartPanel').classList.toggle('open');
+  document.getElementById('cartOverlay').classList.toggle('open');
+}
+
+function applyCartPromo() {
+  var input = document.getElementById('promoInput');
+  var code = input.value.trim().toUpperCase();
+  if (!code) return;
+  var foundPromo = PROMO_CODES.find(function(p){ return p.code === code; });
+  var msg = document.getElementById('promoSuccessMsg');
+  if (foundPromo) {
+    activePromo = foundPromo;
+    saveCart();
+    msg.classList.add('show');
+    msg.textContent = 'Промокод ' + code + ' застосовано (-' + foundPromo.discount + '%)';
+    input.value = '';
+    renderCart();
+    showToast('Промокод застосовано!');
+  } else {
+    showToast('Невірний промокод');
+    msg.classList.remove('show');
+  }
+}
+
+function setPaymentMethod(method) {
+  selectedPayment = method;
+  document.getElementById('payCashBtn').classList.toggle('active', method === 'cash');
+  document.getElementById('payOnlineBtn').classList.toggle('active', method === 'online');
+}
+
+/* === CHECKOUT === */
+async function sendOrderToTelegram(text){
+  try {
+    const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ text: text }) });
+    const data = await res.json();
+    return data.ok === true;
+  } catch(e){ return false; }
+}
+
+function buildOrderText(order){
+  var lines = [];
+  lines.push('<b>Нове замовлення Sage</b>');
+  lines.push('Код: <code>' + esc(order.code) + '</code>');
+  lines.push('Дата: ' + esc(order.date));
+  lines.push('<b>Клієнт:</b>');
+  lines.push('ПІБ: ' + esc(order.customer.name));
+  lines.push('Тел: ' + esc(order.customer.phone));
+  if (order.customer.email) lines.push('Email: ' + esc(order.customer.email));
+  lines.push('Адреса: ' + esc(order.customer.address));
+  lines.push('Оплата: <b>' + esc(order.payment) + '</b>');
+  lines.push('<b>Товари:</b>');
+  order.items.forEach(function(it, i){
+    lines.push((i+1) + '. <b>' + esc(it.brand) + '</b> ' + esc(it.name) + ' — ' + esc(it.colorName) + ' / ' + esc(it.size) + ' × ' + it.qty + ' = ' + fmt(it.lineTotal));
+  });
+  lines.push('Сума: ' + fmt(order.subtotal));
+  if (order.promo) lines.push('Промокод: ' + esc(order.promo.code) + ' (-' + esc(order.promo.discount) + '%)');
+  lines.push('До сплати: <b>' + fmt(order.total) + '</b>');
+  return lines.join('\n');
+}
+
+async function processCheckout(name, phone, email, address, payment) {
+  if(cart.length === 0){ showToast('Кошик порожній'); return false; }
+  var subtotal = 0;
+  cart.forEach(function(it){ subtotal += getProductPrice(it) * it.qty; });
+  var total = activePromo ? subtotal - (subtotal * activePromo.discount / 100) : subtotal;
+  var order = {
+    code: 'S' + Date.now().toString(36).toUpperCase(),
+    date: new Date().toLocaleString('uk-UA'),
+    customer: { name, phone, email, address },
+    payment: payment === 'cash' ? 'Оплата на пошті' : 'Онлайн оплата',
+    items: cart.map(function(it){ return { brand: it.brand, name: it.name, colorName: it.colorName, size: it.size, qty: it.qty, lineTotal: getProductPrice(it) * it.qty }; }),
+    subtotal: subtotal, promo: activePromo, total: total
+  };
+  var orderText = buildOrderText(order);
+  var sent = await sendOrderToTelegram(orderText);
+  if (sent) { showToast('Замовлення ' + order.code + ' прийнято ✓'); }
+  else { showToast('Помилка відправки. Напишіть у Telegram.'); return false; }
+
+  cart.forEach(function(item){ var p = PRODUCTS.find(function(x){ return x.id === item.id; }); if (p) p.salesCount = (p.salesCount || 0) + item.qty; });
+  await saveData();
+  renderHeroNewArrivals();
+  cart = []; activePromo = null;
+  saveCart(); renderCart();
+  setTimeout(toggleCart, 600);
+  return true;
+}
+
+/* === АДМІН === */
+let currentAdminTab = 'products';
+
+async function requestAdminAccess(){
+  if (sessionStorage.getItem('sage_admin_token')) { adminToken = sessionStorage.getItem('sage_admin_token'); openAdmin(); return; }
+  var pass = prompt('Пароль адміна:');
+  if (pass == null) return;
+  try {
+    var res = await fetch(API_URL + '/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) });
+    var data = await res.json();
+    if (data && data.ok && data.token) {
+      sessionStorage.setItem('sage_admin_token', data.token);
+      adminToken = data.token;
+      openAdmin();
+    } else { showToast('Невірний пароль'); }
+  } catch(e) { showToast('Сервер недоступний'); }
+}
+
+function switchAdminTab(tab) {
+  currentAdminTab = tab;
+  document.getElementById('tabProducts').classList.toggle('active', tab === 'products');
+  document.getElementById('tabPromos').classList.toggle('active', tab === 'promos');
+  document.getElementById('adminContentProducts').style.display = tab === 'products' ? 'flex' : 'none';
+  document.getElementById('adminContentPromos').style.display = tab === 'promos' ? 'flex' : 'none';
+  if (tab === 'products') renderAdminProducts();
+  if (tab === 'promos') renderAdminPromos();
+}
+
+function openAdmin() {
+  switchAdminTab('products');
+  document.getElementById('adminOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAdmin() {
+  document.getElementById('adminOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function renderAdminProducts() {
+  var list = document.getElementById('adminContentProducts');
+  var html = '';
+  PRODUCTS.forEach(function(p){
+    var colorsHtml = '';
+    p.colors.forEach(function(c, idx){
+      var isChecked = c.inStock ? 'checked' : '';
+      var outCls = !c.inStock ? ' out' : '';
+      colorsHtml += '<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;"><label class="admin-color-check' + outCls + '" style="flex-shrink:0;"><input type="checkbox" ' + isChecked + ' data-act="stock" data-id="' + p.id + '" data-cidx="' + idx + '">' + esc(c.name) + '</label><input type="text" class="admin-price-input" style="flex:1; width:auto; min-width:200px;" placeholder="URL картинки" value="' + esc(c.img || '') + '" data-act="img" data-id="' + p.id + '" data-cidx="' + idx + '"></div>';
+    });
+    html += '<div class="admin-item" data-id="' + p.id + '"><div class="admin-item-top"><div class="admin-item-info"><div class="admin-item-name">' + esc(p.name) + '</div><div class="admin-item-brand">' + esc(p.brand) + '</div></div><div class="admin-item-actions"><button class="admin-action-btn admin-btn-reset-sales" data-act="reset" data-id="' + p.id + '">Продажі: ' + (p.salesCount || 0) + '</button><button class="admin-action-btn admin-btn-stock-all" data-act="stock-all" data-id="' + p.id + '">Все є</button></div></div><div class="admin-inputs-wrap"><div class="admin-input-group"><label>Ціна (₴)</label><input type="number" class="admin-price-input" value="' + p.price + '" data-act="price" data-id="' + p.id + '"></div><div class="admin-input-group"><label>Знижка (%)</label><input type="number" class="admin-price-input" value="' + (p.discount || 0) + '" data-act="discount" data-id="' + p.id + '"></div><button class="admin-delete-btn" data-act="delete" data-id="' + p.id + '" title="Видалити" style="margin-left:auto;">×</button></div><div class="admin-colors-wrap">' + colorsHtml + '</div></div>';
+  });
+  list.innerHTML = html;
+  list.querySelectorAll('[data-act]').forEach(function(el){
+    var act = el.getAttribute('data-act');
+    var id = parseInt(el.getAttribute('data-id'), 10);
+    if (act === 'stock') el.addEventListener('change', function(){ toggleAdminColorStock(id, parseInt(el.getAttribute('data-cidx'),10)); });
+    else if (act === 'reset') el.addEventListener('click', function(){ resetSales(id); });
+    else if (act === 'stock-all') el.addEventListener('click', function(){ setAllStock(id); });
+    else if (act === 'price') el.addEventListener('change', function(){ updateAdminPrice(id, el.value); });
+    else if (act === 'discount') el.addEventListener('change', function(){ updateAdminDiscount(id, el.value); });
+    else if (act === 'delete') el.addEventListener('click', function(){ deleteAdminProduct(id); });
+    else if (act === 'img') el.addEventListener('change', function(){ updateAdminImg(id, parseInt(el.getAttribute('data-cidx'), 10), el.value); });
+  });
+}
+
+function renderAdminPromos() {
+  var list = document.getElementById('promoList');
+  if (PROMO_CODES.length === 0) { list.innerHTML = '<div style="color:var(--muted); font-size:13px;">Немає створених промокодів.</div>'; return; }
+  var html = '';
+  PROMO_CODES.forEach(function(p){
+    html += '<div class="promo-list-item"><div><span class="promo-code-txt">' + esc(p.code) + '</span><span style="color:var(--cream); font-size:13px; margin-left:10px;">(-' + esc(p.discount) + '%)</span></div><button class="admin-delete-btn" data-promo-code="' + esc(p.code) + '" title="Видалити">×</button></div>';
+  });
+  list.innerHTML = html;
+  list.querySelectorAll('[data-promo-code]').forEach(function(btn){ btn.addEventListener('click', function(){ deletePromoCode(btn.getAttribute('data-promo-code')); }); });
+}
+
+function createPromoCode() {
+  var codeInput = document.getElementById('newPromoCode');
+  var discInput = document.getElementById('newPromoDiscount');
+  var code = codeInput.value.trim().toUpperCase();
+  var disc = Number(discInput.value);
+  if (!code || !disc || disc <= 0 || disc > 100) { showToast('Введіть коректний код та знижку'); return; }
+  if (PROMO_CODES.some(function(p){ return p.code === code; })) { showToast('Такий промокод вже існує'); return; }
+  PROMO_CODES.push({ code: code, discount: disc });
+  saveData(); renderAdminPromos();
+  codeInput.value = ''; discInput.value = '';
+  showToast('Промокод створено!');
+}
+
+function deletePromoCode(code) {
+  if(confirm('Видалити цей промокод?')) {
+    PROMO_CODES = PROMO_CODES.filter(function(p){ return p.code !== code; });
+    saveData(); renderAdminPromos(); showToast('Промокод видалено');
+  }
+}
+
+function updateAdminPrice(id, newPrice) {
+  var p = PRODUCTS.find(function(x){ return x.id === id; });
+  if (p) { p.price = Number(newPrice) || 0; saveData(); renderGrid(); renderHeroNewArrivals(); showToast('Ціну оновлено'); }
+}
+
+function updateAdminDiscount(id, newDisc) {
+  var p = PRODUCTS.find(function(x){ return x.id === id; });
+  if (p) { p.discount = Math.max(0, Math.min(100, Number(newDisc) || 0)); saveData(); renderGrid(); renderHeroNewArrivals(); showToast('Знижку оновлено'); }
+}
+
+function updateAdminImg(id, cidx, url) {
+  var p = PRODUCTS.find(function(x){ return x.id === id; });
+  if (p && p.colors[cidx]) { p.colors[cidx].img = url.trim(); saveData(); renderGrid(); renderHeroNewArrivals(); showToast('Картинку оновлено'); }
+}
+
+function toggleAdminColorStock(id, colorIdx) {
+  var p = PRODUCTS.find(function(x){ return x.id === id; });
+  if (p && p.colors[colorIdx]) {
+    p.colors[colorIdx].inStock = !p.colors[colorIdx].inStock;
+    saveData(); renderAdminProducts(); renderGrid(); renderHeroNewArrivals();
+    showToast(p.colors[colorIdx].name + ' — статус змінено');
+  }
+}
+
+function deleteAdminProduct(id) {
+  if(confirm('Ви впевнені, що хочете видалити цей товар?')) {
+    PRODUCTS = PRODUCTS.filter(function(x){ return x.id !== id; });
+    cart = cart.filter(function(x){ return x.id !== id; });
+    if (cart.length === 0) activePromo = null;
+    saveCart(); saveData(); renderAdminProducts(); renderGrid(); renderHeroNewArrivals(); renderCart();
+    showToast('Товар видалено');
+  }
+}
+
+function resetSales(id) {
+  var p = PRODUCTS.find(function(x){ return x.id === id; });
+  if (p) { p.salesCount = 0; saveData(); renderAdminProducts(); renderHeroNewArrivals(); showToast('Лічильник скинуто'); }
+}
+
+function setAllStock(id) {
+  var p = PRODUCTS.find(function(x){ return x.id === id; });
+  if (p) { p.colors.forEach(function(c){ c.inStock = true; }); saveData(); renderAdminProducts(); renderGrid(); renderHeroNewArrivals(); showToast('Всі кольори в наявності'); }
+}
+
+/* === TOAST === */
+var toastTimer;
+function showToast(msg){
+  var t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+
+function bindEvent(id, event, handler) { var el = document.getElementById(id); if(el) el.addEventListener(event, handler); }
+
+bindEvent('qtyMinus', 'click', function() { if (selectedQty > 1) { selectedQty--; document.getElementById('qtyDisplay').textContent = selectedQty; } });
+bindEvent('qtyPlus', 'click', function() { if (selectedQty < 10) { selectedQty++; document.getElementById('qtyDisplay').textContent = selectedQty; } });
+bindEvent('returnLink', 'click', function(e){ e.preventDefault(); document.getElementById('returnOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; });
+bindEvent('returnCloseBtn', 'click', function(){ document.getElementById('returnOverlay').classList.remove('open'); document.body.style.overflow = ''; });
+bindEvent('returnOverlay', 'click', function(e){ if(e.target === this) { this.classList.remove('open'); document.body.style.overflow = ''; } });
+bindEvent('deliveryLink', 'click', function(e){ e.preventDefault(); document.getElementById('deliveryOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; });
+bindEvent('deliveryCloseBtn', 'click', function(){ document.getElementById('deliveryOverlay').classList.remove('open'); document.body.style.overflow = ''; });
+bindEvent('deliveryOverlay', 'click', function(e){ if(e.target === this) { this.classList.remove('open'); document.body.style.overflow = ''; } });
+bindEvent('heroCartBtn', 'click', toggleCart);
+bindEvent('cartCloseBtn', 'click', toggleCart);
+bindEvent('cartOverlay', 'click', toggleCart);
+bindEvent('modalCloseBtn', 'click', closeModal);
+bindEvent('modalOverlay', 'click', function(e){ if(e.target === document.getElementById('modalOverlay')) closeModal(); });
+bindEvent('modalAdd', 'click', function(){ if(!activeProduct) return; if(!activeSize){ showToast('Оберіть розмір'); return; } addToCart(activeProduct.id, activeSize, activeColorIdx, selectedQty); closeModal(); });
+
+bindEvent('checkoutBtn', 'click', function() {
+  if(cart.length === 0) { showToast('Кошик порожній'); return; }
+  toggleCart();
+  document.getElementById('checkoutOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+});
+bindEvent('checkoutCloseBtn', 'click', function() { document.getElementById('checkoutOverlay').classList.remove('open'); document.body.style.overflow = ''; });
+bindEvent('checkoutOverlay', 'click', function(e) { if(e.target === this) { this.classList.remove('open'); document.body.style.overflow = ''; } });
+
+document.getElementById('payCashBtn').addEventListener('click', function(){ setPaymentMethod('cash'); });
+document.getElementById('payOnlineBtn').addEventListener('click', function(){ setPaymentMethod('online'); });
+
+bindEvent('submitOrderBtn', 'click', async function() {
+  var name = document.getElementById('checkoutName').value.trim();
+  var phone = document.getElementById('checkoutPhone').value.trim();
+  var email = document.getElementById('checkoutEmail').value.trim();
+  var address = document.getElementById('checkoutAddress').value.trim();
+  if (!name) { showToast('Вкажіть ПІБ'); return; }
+  if (!phone) { showToast('Вкажіть телефон'); return; }
+  if (!address) { showToast('Вкажіть адресу'); return; }
+  var btn = this;
+  var originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Відправляємо...';
+  var success = await processCheckout(name, phone, email, address, selectedPayment);
+  btn.disabled = false;
+  btn.textContent = originalText;
+  if (success) {
+    document.getElementById('checkoutOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    document.getElementById('checkoutName').value = '';
+    document.getElementById('checkoutPhone').value = '';
+    document.getElementById('checkoutEmail').value = '';
+    document.getElementById('checkoutAddress').value = '';
+    setPaymentMethod('cash');
+  }
+});
+
+bindEvent('adminCloseBtn', 'click', closeAdmin);
+bindEvent('applyPromoBtn', 'click', applyCartPromo);
+bindEvent('createPromoBtn', 'click', createPromoCode);
+document.getElementById('tabProducts').addEventListener('click', function(){ switchAdminTab('products'); });
+document.getElementById('tabPromos').addEventListener('click', function(){ switchAdminTab('promos'); });
+document.querySelectorAll('.brand-links-grid a[data-brand]').forEach(function(a){
+  a.addEventListener('click', function(e){ e.preventDefault(); window.searchBrand(a.getAttribute('data-brand')); });
+});
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.code === 'KeyA') { e.preventDefault(); requestAdminAccess(); }
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    closeModal(); closeAdmin();
+    document.getElementById('returnOverlay').classList.remove('open');
+    document.getElementById('deliveryOverlay').classList.remove('open');
+    document.getElementById('checkoutOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    if(document.getElementById('cartPanel').classList.contains('open')) toggleCart();
+  }
+});
+var resizeTimer;
+window.addEventListener('resize', function() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function(){ if(document.getElementById('hero3DCarousel')) renderHeroNewArrivals(); }, 150);
+});
+
+/* === BOOT === */
+loadData().then(() => {
+  initMarquee();
+  applyFilter('all');
+  renderHeroNewArrivals();
+  renderCart();
+  loadCart();
+});
+</script>
+
+</body>
+</html>
