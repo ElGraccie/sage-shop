@@ -518,6 +518,16 @@
     *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
     .marquee-content{animation:none}
   }
+
+  /* ПЛАВНИЙ ПЕРЕХІД З HERO В КАТАЛОГ (без різкої межі) */
+  .hero-section{
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 140px),transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 140px),transparent 100%);
+  }
+  .hero-main{ padding-bottom:150px; }
+  @media(max-width:900px){
+    .hero-main{ padding-bottom:150px; }
+  }
 </style>
 </head>
 <body>
