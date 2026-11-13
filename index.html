@@ -80,11 +80,12 @@
   .cart-badge { position: absolute;top: 0;right: 0;background: var(--cream);color: var(--bg);font-size: 10px;font-weight: 700;min-width: 18px;height: 18px;border-radius: 9px;display: flex;align-items: center;justify-content: center;padding: 0 4px;transform: translate(4px, -4px);box-shadow: 0 0 10px rgba(245,240,230,.5); }
   
   /* БРЕНДИ НАВЕРХУ */
-  .brand-marquee { position: relative;z-index: 10;width: 100%;overflow: hidden;background: rgba(0, 0, 0, 0.4);backdrop-filter: blur(10px);border-top: 1px solid rgba(255,255,255,0.08);border-bottom: 1px solid rgba(255,255,255,0.08);padding: 12px 0;display: flex;white-space: nowrap;margin-top: 15px; }
-  .marquee-content { display: flex;animation: scrollMarquee 30s linear infinite; }
-  .marquee-content span { color: #fff;font-family: monospace, sans-serif;font-size: 11px;letter-spacing: 2px;text-transform: uppercase;margin-right: 30px;opacity: 0.8; }
+  .brand-marquee { position: relative;z-index: 10;width: 100%;overflow: hidden;background: rgba(0, 0, 0, 0.4);backdrop-filter: blur(10px);border-top: 1px solid rgba(255,255,255,0.08);border-bottom: 1px solid rgba(255,255,255,0.08);padding: 12px 0;display: block;white-space: nowrap;margin-top: 15px; }
+  .marquee-content { display: flex;width: max-content;flex-shrink: 0;-webkit-animation: scrollMarquee 30s linear infinite;animation: scrollMarquee 30s linear infinite; }
+  .marquee-content span { flex-shrink: 0;color: #fff;font-family: monospace, sans-serif;font-size: 11px;letter-spacing: 2px;text-transform: uppercase;margin-right: 30px;opacity: 0.8; }
   .marquee-content span.diamond { font-size: 8px;opacity: 0.5;margin-right: 30px; }
-  @keyframes scrollMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  @-webkit-keyframes scrollMarquee { 0% { -webkit-transform: translate3d(0,0,0); } 100% { -webkit-transform: translate3d(-50%,0,0); } }
+  @keyframes scrollMarquee { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-50%,0,0); } }
 
   /* HERO MAIN */
   .hero-main {
@@ -528,7 +529,6 @@
     mask-image:linear-gradient(to bottom,#000 calc(100% - 220px),transparent 100%);
   }
   .hero-main{ padding-bottom:80px; }
-  .marquee-content{ will-change:transform; }
 
   /* ЦІНИ: яскравіші та крупніші */
   :root{ --price:#ff6b6b; }
