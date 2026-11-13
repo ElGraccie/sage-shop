@@ -1755,6 +1755,7 @@ function setAllStock(id) {
 /* ===== НОВА ПОШТА: МІСТО ТА ВІДДІЛЕННЯ (через Worker-проксі) ===== */
 const NP_URL = API_URL + '/api/np';
 let npCity = null, npWarehouse = null, npCitySeq = 0, npWhSeq = 0;
+const npCache = new Map();
 
 async function npRequest(modelName, calledMethod, methodProperties){
   const res = await fetchWithTimeout(NP_URL, {
@@ -1766,6 +1767,15 @@ async function npRequest(modelName, calledMethod, methodProperties){
   if (!data.success) throw new Error((data.errors || []).join('; ') || 'NP error');
   return data.data || [];
 }
+
+async function npRequestCached(modelName, calledMethod, methodProperties){
+  const key = modelName + '|' + calledMethod + '|' + JSON.stringify(methodProperties);
+  if (npCache.has(key)) return npCache.get(key);
+  const data = await npRequest(modelName, calledMethod, methodProperties);
+  npCache.set(key, data);
+  return data;
+}
+
 function debounce(fn, ms){ var t; return function(){ var a = arguments; clearTimeout(t); t = setTimeout(function(){ fn.apply(null, a); }, ms); }; }
 
 function npRenderList(listEl, items, labelFn, subFn, onPick){
@@ -1786,7 +1796,7 @@ async function npSearchCities(q){
   if (q.length < 2) { list.classList.remove('open'); return; }
   var seq = ++npCitySeq;
   try {
-    var cities = await npRequest('Address', 'getCities', { FindByString: q, Limit: '20' });
+    var cities = await npRequestCached('Address', 'getCities', { FindByString: q, Limit: '20' });
     if (seq !== npCitySeq) return;
     npRenderList(list, cities,
       function(c){ return c.Description; },
@@ -1794,7 +1804,12 @@ async function npSearchCities(q){
       npPickCity);
   } catch(e) {
     console.error('NP error:', e);
-    list.innerHTML = '<div class="np-empty">Помилка: ' + esc(e && e.message ? e.message : 'невідома') + '</div>';
+    var msg = e && e.message ? e.message : 'невідома';
+    if (msg.toLowerCase().indexOf('too many requests') !== -1) {
+      list.innerHTML = '<div class="np-empty">Нова Пошта тимчасово обмежила запити. Зачекайте 1-2 хвилини і спробуйте знову.</div>';
+    } else {
+      list.innerHTML = '<div class="np-empty">Помилка: ' + esc(msg) + '</div>';
+    }
     list.classList.add('open');
   }
 }
@@ -1812,11 +1827,18 @@ function npPickCity(c){
 
 async function npSearchWarehouses(q){
   if (!npCity) return;
+  q = q.trim();
+  if (q.length > 0 && q.length < 2) return;
+
   var list = document.getElementById('npWhList');
   var seq = ++npWhSeq;
   try {
-    var whs = await npRequest('Address', 'getWarehouses', {
-      CityRef: npCity.ref, FindByString: q.trim(), Limit: '50', Page: '1', Language: 'UA'
+    var whs = await npRequestCached('Address', 'getWarehouses', {
+      CityRef: npCity.ref,
+      FindByString: q,
+      Limit: '100',
+      Page: '1',
+      Language: 'UA'
     });
     if (seq !== npWhSeq) return;
     npRenderList(list, whs,
@@ -1829,7 +1851,12 @@ async function npSearchWarehouses(q){
       });
   } catch(e) {
     console.error('NP error:', e);
-    list.innerHTML = '<div class="np-empty">Помилка: ' + esc(e && e.message ? e.message : 'невідома') + '</div>';
+    var msg = e && e.message ? e.message : 'невідома';
+    if (msg.toLowerCase().indexOf('too many requests') !== -1) {
+      list.innerHTML = '<div class="np-empty">Нова Пошта тимчасово обмежила запити. Зачекайте 1-2 хвилини і спробуйте знову.</div>';
+    } else {
+      list.innerHTML = '<div class="np-empty">Помилка: ' + esc(msg) + '</div>';
+    }
     list.classList.add('open');
   }
 }
@@ -1841,8 +1868,8 @@ function npReset(){
   wh.value = ''; wh.disabled = true; wh.placeholder = 'Спочатку оберіть місто';
 }
 
-var npDebouncedCity = debounce(npSearchCities, 300);
-var npDebouncedWh = debounce(npSearchWarehouses, 300);
+var npDebouncedCity = debounce(npSearchCities, 800);
+var npDebouncedWh = debounce(npSearchWarehouses, 800);
 
 document.getElementById('npCityInput').addEventListener('input', function(e){
   npCity = null; npWarehouse = null;
