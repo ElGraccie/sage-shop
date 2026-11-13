@@ -190,6 +190,7 @@
     cursor: pointer;
     transition: all 0.4s var(--ease-smooth);
     animation: floatCard 6s ease-in-out infinite;
+    overflow: hidden;
   }
   .hero-visual-card:hover { 
     transform: translateY(-10px) scale(1.02); 
@@ -206,22 +207,26 @@
   }
 
   /* ПУНКТ 1: СНІГ НА КАРТКАХ В ЗИМОВОМУ РЕЖИМІ */
-  body.winter-mode .hero-visual-card::after {
+  body.winter-mode .hero-visual-card::after,
+  body.winter-mode .card::after {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 45px;
-    background:
-      radial-gradient(circle at 15% 15%, rgba(255,255,255,0.9) 2px, transparent 3px),
-      radial-gradient(circle at 35% 25%, rgba(255,255,255,0.8) 3px, transparent 4px),
-      radial-gradient(circle at 55% 10%, rgba(255,255,255,0.9) 1.5px, transparent 2.5px),
-      radial-gradient(circle at 75% 20%, rgba(255,255,255,0.85) 2.5px, transparent 3.5px),
-      radial-gradient(circle at 90% 15%, rgba(255,255,255,0.9) 2px, transparent 3px),
-      radial-gradient(ellipse at top, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 24px 24px 0 0;
+    height: 36px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 40' preserveAspectRatio='none'><defs><linearGradient id='sg' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23ffffff'/><stop offset='60%25' stop-color='%23f0f6ff'/><stop offset='100%25' stop-color='%23d4e2f5'/></linearGradient></defs><path d='M0,0 L400,0 L400,16 C 385,24 370,12 355,18 C 340,24 325,14 310,20 C 295,26 280,14 265,20 C 250,26 235,14 220,20 C 205,26 190,14 175,20 C 160,26 145,14 130,20 C 115,26 100,14 85,20 C 70,26 55,14 40,20 C 25,26 10,16 0,20 Z' fill='url(%23sg)'/><circle cx='40' cy='8' r='1.8' fill='%23ffffff' opacity='0.95'/><circle cx='90' cy='6' r='1.4' fill='%23ffffff' opacity='0.85'/><circle cx='140' cy='9' r='1.6' fill='%23ffffff' opacity='0.9'/><circle cx='190' cy='7' r='1.5' fill='%23ffffff' opacity='0.85'/><circle cx='240' cy='9' r='1.7' fill='%23ffffff' opacity='0.95'/><circle cx='290' cy='6' r='1.3' fill='%23ffffff' opacity='0.85'/><circle cx='340' cy='8' r='1.5' fill='%23ffffff' opacity='0.9'/><circle cx='380' cy='7' r='1.4' fill='%23ffffff' opacity='0.85'/></svg>");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
     pointer-events: none;
-    z-index: 10;
+    z-index: 6;
+    box-shadow: 0 2px 4px rgba(100,160,230,0.18);
+    border-radius: 14px 14px 0 0;
   }
+  body.winter-mode .hero-visual-card::after {
+    height: 46px;
+    border-radius: 24px 24px 0 0;
+  }
+  body.winter-mode .card-promo-badge { top: 30px; }
+  body.winter-mode .hero-promo-badge { top: 32px; }
   
   /* Бейдж АКЦІЯ для карток в Hero */
   .hero-promo-badge {
@@ -290,6 +295,9 @@
     .hero-promo-badge { font-size: 9px; padding: 3px 8px; top: 8px; left: 8px; }
     
     body.winter-mode .hero-visual-card::after { height: 30px; border-radius: 16px 16px 0 0; }
+    body.winter-mode .card::after { height: 24px; }
+    body.winter-mode .card-promo-badge { top: 20px; }
+    body.winter-mode .hero-promo-badge { top: 20px; }
   }
   
   @media (hover: none) {
@@ -887,38 +895,133 @@ window.searchBrand = function(brand) {
   document.getElementById('catalog').scrollIntoView({behavior:'smooth'});
 };
 
-/* ===== СНІГ ===== */
+/* ===== СНІГ (оптимізований) ===== */
 const canvas = document.getElementById('snowCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: true });
 let flakes = [];
-function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-window.addEventListener('resize', resizeCanvas); resizeCanvas();
-function createSnow() {
-  flakes = Array.from({length: 120}, function(){
-    return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 0.5, d: Math.random() * 0.6 - 0.3, speed: Math.random() * 1 + 0.4, opacity: Math.random() * 0.5 + 0.2 };
-  });
+let snowRAF = null;
+let snowRunning = false;
+let lastFrame = 0;
+const SNOW_FPS = 30;
+const FRAME_MS = 1000 / SNOW_FPS;
+let snowSprite = null;
+
+function isMobile(){ return window.innerWidth < 900; }
+
+function buildSprite(){
+  const r = 8;
+  const s = document.createElement('canvas');
+  s.width = s.height = r * 2;
+  const sc = s.getContext('2d');
+  const grad = sc.createRadialGradient(r, r, 0, r, r, r);
+  grad.addColorStop(0, 'rgba(220,240,255,1)');
+  grad.addColorStop(0.4, 'rgba(200,230,255,0.85)');
+  grad.addColorStop(1, 'rgba(200,230,255,0)');
+  sc.fillStyle = grad;
+  sc.fillRect(0, 0, r * 2, r * 2);
+  snowSprite = s;
 }
-function drawSnow() {
-  if(!document.body.classList.contains('winter-mode')) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  flakes.forEach(function(f){
-    ctx.fillStyle = 'rgba(200, 230, 255, ' + f.opacity + ')';
-    ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
-    f.y += f.speed; f.x += f.d + Math.sin(f.y / 40) * 0.4;
-    if(f.y > canvas.height) { f.y = -10; f.x = Math.random() * canvas.width; }
-    if(f.x > canvas.width) { f.x = 0; } if(f.x < 0) { f.x = canvas.width; }
-  });
-  requestAnimationFrame(drawSnow);
+
+function resizeCanvas(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.floor(window.innerWidth * dpr);
+  canvas.height = Math.floor(window.innerHeight * dpr);
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-function toggleWinterMode() {
+
+function createSnow(){
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const count = isMobile() ? 25 : 45;
+  flakes = new Array(count);
+  for (let i = 0; i < count; i++){
+    flakes[i] = {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.6 + 0.6,
+      d: Math.random() * 0.5 - 0.25,
+      speed: Math.random() * 0.7 + 0.35,
+      opacity: Math.random() * 0.5 + 0.35
+    };
+  }
+}
+
+function drawSnow(now){
+  if (!snowRunning) return;
+  snowRAF = requestAnimationFrame(drawSnow);
+  if (now - lastFrame < FRAME_MS) return;
+  lastFrame = now;
+
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  ctx.clearRect(0, 0, W, H);
+
+  const sprite = snowSprite;
+  if (!sprite) return;
+
+  for (let i = 0; i < flakes.length; i++){
+    const f = flakes[i];
+    const size = f.r * 4;
+    ctx.globalAlpha = f.opacity;
+    ctx.drawImage(sprite, f.x - size / 2, f.y - size / 2, size, size);
+    f.y += f.speed;
+    f.x += f.d + Math.sin(f.y * 0.02) * 0.3;
+    if (f.y > H + 4){ f.y = -4; f.x = Math.random() * W; }
+    if (f.x > W + 4) f.x = -4;
+    else if (f.x < -4) f.x = W + 4;
+  }
+  ctx.globalAlpha = 1;
+}
+
+function startSnow(){
+  if (snowRunning) return;
+  if (!snowSprite) buildSprite();
+  snowRunning = true;
+  lastFrame = 0;
+  snowRAF = requestAnimationFrame(drawSnow);
+}
+
+function stopSnow(){
+  snowRunning = false;
+  if (snowRAF) cancelAnimationFrame(snowRAF);
+  snowRAF = null;
+  const W = window.innerWidth, H = window.innerHeight;
+  ctx.clearRect(0, 0, W, H);
+}
+
+function toggleWinterMode(){
   document.body.classList.toggle('winter-mode');
   const isWinter = document.body.classList.contains('winter-mode');
   lsSet('sage_winter', isWinter);
-  if(isWinter) { createSnow(); requestAnimationFrame(drawSnow); }
-  else { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  if (isWinter){ createSnow(); startSnow(); }
+  else { stopSnow(); }
 }
+
 document.getElementById('winterToggle').addEventListener('click', toggleWinterMode);
-if(lsGet('sage_winter') === 'true') { document.body.classList.add('winter-mode'); createSnow(); requestAnimationFrame(drawSnow); }
+
+let _resizeSnowTimer;
+window.addEventListener('resize', function(){
+  clearTimeout(_resizeSnowTimer);
+  _resizeSnowTimer = setTimeout(function(){
+    resizeCanvas();
+    if (snowRunning) createSnow();
+  }, 200);
+});
+
+document.addEventListener('visibilitychange', function(){
+  if (document.hidden){ stopSnow(); }
+  else if (document.body.classList.contains('winter-mode')){ startSnow(); }
+});
+
+resizeCanvas();
+
+if (lsGet('sage_winter') === 'true'){
+  document.body.classList.add('winter-mode');
+  createSnow();
+  startSnow();
+}
 
 /* ===== КОШИК ===== */
 function loadCart(){
