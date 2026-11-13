@@ -486,6 +486,16 @@
     .price-old { font-size: 11px; }
     .discount-badge { padding: 2px 4px; font-size: 9px; margin-left: 0; }
   }
+
+  /* НОВА ПОШТА: вибір міста та відділення */
+  .np-select{position:relative}
+  .np-dropdown{display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;max-height:240px;overflow-y:auto;background:rgba(20,20,24,.98);border:1px solid var(--line);border-radius:8px;z-index:20;box-shadow:0 12px 30px rgba(0,0,0,.8)}
+  .np-dropdown.open{display:block}
+  .np-option{padding:10px 12px;font-size:13px;color:var(--cream);cursor:pointer;border-bottom:1px solid var(--line-soft)}
+  .np-option:hover{background:rgba(255,255,255,.08)}
+  .np-option small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+  .np-empty{padding:12px;font-size:12px;color:var(--muted)}
+  .form-input:disabled{opacity:.5;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -579,7 +589,20 @@
   <div class="form-group"><label for="checkoutName">ПІБ</label><input type="text" id="checkoutName" class="form-input" placeholder="Іванов Іван Іванович" maxlength="120"></div>
   <div class="form-group"><label for="checkoutPhone">Телефон</label><input type="tel" id="checkoutPhone" class="form-input" placeholder="+380..." maxlength="30"></div>
   <div class="form-group"><label for="checkoutEmail">Email (не обов'язково)</label><input type="email" id="checkoutEmail" class="form-input" placeholder="mail@example.com" maxlength="120"></div>
-  <div class="form-group"><label for="checkoutAddress">Адреса (Відділення Нової Пошти)</label><input type="text" id="checkoutAddress" class="form-input" placeholder="м. Київ, Відділення №1" maxlength="240"></div>
+  <div class="form-group">
+    <label for="npCityInput">Місто</label>
+    <div class="np-select">
+      <input type="text" id="npCityInput" class="form-input" placeholder="Почніть вводити: Умань, Київ..." autocomplete="off" maxlength="60">
+      <div class="np-dropdown" id="npCityList"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="npWhInput">Відділення / поштомат Нової Пошти</label>
+    <div class="np-select">
+      <input type="text" id="npWhInput" class="form-input" placeholder="Спочатку оберіть місто" autocomplete="off" disabled>
+      <div class="np-dropdown" id="npWhList"></div>
+    </div>
+  </div>
   <div class="form-group" style="margin-top: 24px;"><label>Спосіб оплати</label><div class="pay-methods"><button class="filter-btn active" id="payCashBtn" data-pay="cash">Оплата на пошті</button><button class="filter-btn" id="payOnlineBtn" data-pay="online">Онлайн оплата</button></div></div>
   <button class="modal-add" id="submitOrderBtn" style="margin-top: 24px;">Підтвердити замовлення</button>
 </div></div>
@@ -1271,7 +1294,7 @@ async function requestAdminAccess(){
       ssSet('sage_admin_token', data.token);
       adminToken = data.token;
       openAdmin();
-    } else { showToast('Невірний пароль'); }
+    } else { showToast(data && data.error ? 'Забагато спроб. Зачекайте 15 хвилин.' : 'Невірний пароль'); }
   } catch(e) { showToast('Сервер недоступний'); }
 }
 
@@ -1515,6 +1538,111 @@ function setAllStock(id) {
   if (p) { p.colors.forEach(function(c){ c.inStock = true; }); saveData(); renderAdminProducts(); renderGrid(); renderHeroNewArrivals(); showToast('Всі кольори в наявності'); }
 }
 
+/* ===== НОВА ПОШТА: МІСТО ТА ВІДДІЛЕННЯ (через Worker-проксі) ===== */
+const NP_URL = API_URL + '/api/np';
+let npCity = null, npWarehouse = null, npCitySeq = 0, npWhSeq = 0;
+
+async function npRequest(modelName, calledMethod, methodProperties){
+  const res = await fetchWithTimeout(NP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ modelName: modelName, calledMethod: calledMethod, methodProperties: methodProperties })
+  }, 10000);
+  const data = await res.json();
+  if (!data.success) throw new Error((data.errors || []).join('; ') || 'NP error');
+  return data.data || [];
+}
+function debounce(fn, ms){ var t; return function(){ var a = arguments; clearTimeout(t); t = setTimeout(function(){ fn.apply(null, a); }, ms); }; }
+
+function npRenderList(listEl, items, labelFn, subFn, onPick){
+  if (!items.length) { listEl.innerHTML = '<div class="np-empty">Нічого не знайдено</div>'; listEl.classList.add('open'); return; }
+  listEl.innerHTML = items.map(function(it, i){
+    var sub = subFn ? subFn(it) : '';
+    return '<div class="np-option" data-i="' + i + '">' + esc(labelFn(it)) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+  }).join('');
+  listEl.classList.add('open');
+  listEl.querySelectorAll('.np-option').forEach(function(el){
+    el.addEventListener('click', function(){ onPick(items[parseInt(el.getAttribute('data-i'), 10)]); });
+  });
+}
+
+async function npSearchCities(q){
+  var list = document.getElementById('npCityList');
+  q = q.trim();
+  if (q.length < 2) { list.classList.remove('open'); return; }
+  var seq = ++npCitySeq;
+  try {
+    var cities = await npRequest('Address', 'getCities', { FindByString: q, Limit: '20' });
+    if (seq !== npCitySeq) return;
+    npRenderList(list, cities,
+      function(c){ return c.Description; },
+      function(c){ return c.AreaDescription ? c.AreaDescription + ' обл.' : ''; },
+      npPickCity);
+  } catch(e) {
+    list.innerHTML = '<div class="np-empty">Помилка завантаження. Спробуйте ще раз.</div>';
+    list.classList.add('open');
+  }
+}
+
+function npPickCity(c){
+  npCity = { ref: c.Ref, name: c.Description, area: c.AreaDescription || '' };
+  npWarehouse = null;
+  document.getElementById('npCityInput').value = c.Description;
+  document.getElementById('npCityList').classList.remove('open');
+  var wh = document.getElementById('npWhInput');
+  wh.disabled = false; wh.value = ''; wh.placeholder = 'Номер відділення або вулиця...';
+  npSearchWarehouses('');
+  wh.focus();
+}
+
+async function npSearchWarehouses(q){
+  if (!npCity) return;
+  var list = document.getElementById('npWhList');
+  var seq = ++npWhSeq;
+  try {
+    var whs = await npRequest('Address', 'getWarehouses', {
+      CityRef: npCity.ref, FindByString: q.trim(), Limit: '50', Page: '1', Language: 'UA'
+    });
+    if (seq !== npWhSeq) return;
+    npRenderList(list, whs,
+      function(w){ return w.Description; },
+      null,
+      function(w){
+        npWarehouse = { ref: w.Ref, name: w.Description };
+        document.getElementById('npWhInput').value = w.Description;
+        list.classList.remove('open');
+      });
+  } catch(e) {
+    list.innerHTML = '<div class="np-empty">Помилка завантаження. Спробуйте ще раз.</div>';
+    list.classList.add('open');
+  }
+}
+
+function npReset(){
+  npCity = null; npWarehouse = null;
+  document.getElementById('npCityInput').value = '';
+  var wh = document.getElementById('npWhInput');
+  wh.value = ''; wh.disabled = true; wh.placeholder = 'Спочатку оберіть місто';
+}
+
+var npDebouncedCity = debounce(npSearchCities, 300);
+var npDebouncedWh = debounce(npSearchWarehouses, 300);
+
+document.getElementById('npCityInput').addEventListener('input', function(e){
+  npCity = null; npWarehouse = null;
+  var wh = document.getElementById('npWhInput');
+  wh.value = ''; wh.disabled = true; wh.placeholder = 'Спочатку оберіть місто';
+  npDebouncedCity(e.target.value);
+});
+document.getElementById('npWhInput').addEventListener('input', function(e){ npWarehouse = null; npDebouncedWh(e.target.value); });
+document.getElementById('npWhInput').addEventListener('focus', function(){ if (npCity && !npWarehouse) npSearchWarehouses(this.value); });
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.np-select')) {
+    document.getElementById('npCityList').classList.remove('open');
+    document.getElementById('npWhList').classList.remove('open');
+  }
+});
+
 /* ===== TOAST ===== */
 var toastTimer;
 var toastLastMsg = '';
@@ -1561,12 +1689,12 @@ bindEvent('submitOrderBtn', 'click', async function() {
   var name = document.getElementById('checkoutName').value.trim();
   var phone = document.getElementById('checkoutPhone').value.trim();
   var email = document.getElementById('checkoutEmail').value.trim();
-  var address = document.getElementById('checkoutAddress').value.trim();
   if (!name) { showToast('Вкажіть ПІБ'); return; }
   var phoneDigits = phone.replace(/\D/g, '');
   if (!phone || phoneDigits.length < 10) { showToast('Вкажіть коректний телефон'); return; }
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Перевірте email'); return; }
-  if (!address) { showToast('Вкажіть адресу'); return; }
+  if (!npCity || !npWarehouse) { showToast('Оберіть місто та відділення'); return; }
+  var address = npCity.name + (npCity.area ? ', ' + npCity.area + ' обл.' : '') + ' — ' + npWarehouse.name;
   var btn = this;
   var originalText = btn.textContent;
   btn.disabled = true;
@@ -1580,7 +1708,7 @@ bindEvent('submitOrderBtn', 'click', async function() {
     document.getElementById('checkoutName').value = '';
     document.getElementById('checkoutPhone').value = '';
     document.getElementById('checkoutEmail').value = '';
-    document.getElementById('checkoutAddress').value = '';
+    npReset();
     setPaymentMethod('cash');
   }
 });
