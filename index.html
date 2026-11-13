@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sage — місце, де починається твій стиль</title>
-<meta name="description" content="Sage — репліки одягу та взуття світових брендів. Stone Island, Nike, Supreme, Balenciaga та інші. Доставка Новою поштою по Україні.">
+<title>Sable — місце, де починається твій стиль</title>
+<meta name="description" content="Sable — репліки одягу та взуття світових брендів. Stone Island, Nike, Supreme, Balenciaga та інші. Доставка Новою поштою по Україні.">
 <meta name="theme-color" content="#08080a">
-<meta property="og:title" content="Sage — місце, де починається твій стиль">
+<meta property="og:title" content="Sable — місце, де починається твій стиль">
 <meta property="og:description" content="Репліки одягу та взуття світових брендів. Доставка Новою поштою по Україні.">
 <meta property="og:image" content="https://i.imgur.com/YhGEkG3.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,24 +51,38 @@
   .hero-nav { position: relative;z-index: 10;display: flex;justify-content: space-between;align-items: center;padding: 30px 40px 10px 40px;font-family: monospace, sans-serif;font-size: 11px;letter-spacing: 1px;text-transform: uppercase; }
   .hero-nav-left { display: flex;gap: 40px; }
   
-  /* ЛОГО З БУКВОЮ S */
-  .hero-logo { position: absolute;left: 50%;transform: translateX(-50%);top: 22px;font-family: 'Inter', sans-serif;font-size: 18px;font-weight: 800;letter-spacing: 6px;display: flex;align-items: center;gap: 12px;color: #fff;cursor: pointer;z-index: 20; outline: none; background: transparent !important; }
-  .logo-icon-wrap { position: relative;width: 32px;height: 40px;display: flex;align-items: center;justify-content: center; background: transparent !important; }
+  /* ЛОГО */
+  .hero-logo { position: absolute;left: 50%;transform: translateX(-50%);top: 22px;display: flex;align-items: center;gap: 12px;color: #fff;cursor: pointer;z-index: 20; outline: none; background: transparent !important; }
+  .logo-icon-wrap { position: relative;height: 32px;display: flex;align-items: center;justify-content: center; background: transparent !important; }
   
   .logo-icon-wrap svg { 
-    width: 100%; height: 100%; 
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s; 
+    height: 100%; width: auto;
+    transition: transform 0.4s var(--ease-bounce), filter 0.3s; 
     position: relative; z-index: 2; background: transparent !important;
+    animation: logoPulse 3s ease-in-out infinite;
   }
   .logo-icon-wrap svg path { fill: #fff; transition: fill 0.3s; }
   
-  .hero-logo:hover .logo-icon-wrap svg { transform: scale(1.1) rotate(-5deg); filter: drop-shadow(0 0 15px rgba(255,255,255,0.8)); }
+  .hero-logo:hover .logo-icon-wrap svg { 
+    animation: none;
+    transform: scale(1.15); 
+    filter: drop-shadow(0 0 20px rgba(255,255,255,1)) drop-shadow(0 0 40px rgba(255,255,255,0.6)); 
+  }
   
+  @keyframes logoPulse {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+    50% { filter: drop-shadow(0 0 20px rgba(255,255,255,0.8)); }
+  }
+
   .click-ring { position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);width: 0;height: 0;border: 2px solid rgba(255,255,255,0.8);border-radius: 50%;opacity: 0;pointer-events: none;z-index: 1; }
-  .hero-logo.clicked .logo-icon-wrap svg { animation: starBurst 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .hero-logo.clicked .logo-icon-wrap svg { animation: starBurst 0.6s var(--ease-smooth) forwards; }
   .hero-logo.clicked .click-ring { animation: ringExpand 0.6s ease-out forwards; }
   
-  @keyframes starBurst { 0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 10px #fff); } 50% { transform: scale(1.4) rotate(90deg); filter: drop-shadow(0 0 40px #fff) brightness(2); } 100% { transform: scale(1) rotate(180deg); filter: drop-shadow(0 0 10px #fff); } }
+  @keyframes starBurst { 
+    0% { transform: scale(1); filter: drop-shadow(0 0 10px #fff); } 
+    50% { transform: scale(1.3); filter: drop-shadow(0 0 50px #fff) brightness(3); } 
+    100% { transform: scale(1); filter: drop-shadow(0 0 10px #fff); } 
+  }
   @keyframes ringExpand { 0% { width: 20px; height: 20px; opacity: 1; border-width: 4px; } 100% { width: 150px; height: 150px; opacity: 0; border-width: 1px; } }
   
   .hero-nav-right { display: flex;align-items: center;gap: 20px; }
@@ -276,8 +290,8 @@
     body::before { background-attachment: scroll !important; } 
     .hero-nav { padding: 20px 20px 10px 20px; } 
     .hero-nav-left { display: none; } 
-    .hero-logo { position: relative;left: 0;transform: none;top: 0; font-size: 16px; letter-spacing: 3px; } 
-    .logo-icon-wrap { width: 26px; height: 32px; }
+    .hero-logo { position: relative;left: 0;transform: none;top: 0; } 
+    .logo-icon-wrap { height: 26px; }
     
     /* ПУНКТ 2: ПІДНЯТИ СТРОКУ БРЕНДІВ НА МОБІЛЦІ */
     .brand-marquee { margin-top: 0px; }
@@ -589,24 +603,20 @@
     <div class="hero-logo" id="heroLogo">
       <div class="logo-icon-wrap">
         <div class="click-ring"></div>
-        <!-- ТВОЄ ЛОГО -->
-        <svg viewBox="0 0 260 360" xmlns="http://www.w3.org/2000/svg">
-          <path d="M 130 30 
-                   C 190 20, 250 50, 250 110 
-                   C 250 150, 210 160, 190 140 
-                   C 170 120, 160 100, 140 115 
-                   C 120 130, 160 170, 190 190 
-                   C 230 215, 230 265, 190 290 
-                   C 160 305, 130 300, 105 325 
-                   C 80 350, 30 340, 30 305 
-                   C 30 265, 80 245, 110 225 
-                   C 140 205, 110 180, 85 160 
-                   C 55 135, 55 80, 85 60 
-                   C 100 50, 110 35, 130 30 Z" 
-                fill="#ffffff"/>
+        <!-- НОВЕ ЛОГО -->
+        <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- S -->
+          <path d="M 130 30 C 190 20, 250 50, 250 110 C 250 150, 210 160, 190 140 C 170 120, 160 100, 140 115 C 120 130, 160 170, 190 190 C 230 215, 230 265, 190 290 C 160 305, 130 300, 105 325 C 80 350, 30 340, 30 305 C 30 265, 80 245, 110 225 C 140 205, 110 180, 85 160 C 55 135, 55 80, 85 60 C 100 50, 110 35, 130 30 Z" fill="#ffffff"/>
+          <!-- A -->
+          <path d="M 290 340 C 300 350, 320 350, 330 340 L 350 260 C 380 270, 410 270, 440 260 L 460 340 C 470 350, 490 350, 500 340 C 490 240, 460 100, 430 40 C 410 10, 380 10, 360 40 C 330 100, 300 240, 290 340 Z M 370 220 C 395 225, 420 225, 430 220 L 410 110 C 400 80, 380 80, 370 110 Z" fill="#ffffff" fill-rule="evenodd"/>
+          <!-- B -->
+          <path d="M 540 40 C 540 140, 540 240, 540 340 C 600 350, 660 320, 660 260 C 660 220, 620 190, 590 185 C 630 170, 650 140, 640 90 C 630 40, 580 30, 540 40 Z M 575 100 C 605 95, 615 120, 615 150 C 615 180, 600 195, 575 190 Z M 575 230 C 615 225, 640 250, 640 280 C 640 315, 610 330, 575 320 Z" fill="#ffffff" fill-rule="evenodd"/>
+          <!-- L -->
+          <path d="M 690 40 C 690 150, 690 260, 690 340 C 760 340, 810 320, 840 290 C 860 270, 830 250, 810 265 C 780 285, 740 295, 730 285 C 730 200, 730 120, 730 40 C 720 35, 700 35, 690 40 Z" fill="#ffffff"/>
+          <!-- E -->
+          <path d="M 880 40 C 920 40, 960 50, 970 70 C 970 85, 940 80, 910 80 L 910 170 C 940 170, 970 160, 980 180 C 980 195, 950 195, 910 195 L 910 290 C 940 290, 980 280, 990 300 C 990 315, 950 340, 880 340 C 860 340, 860 330, 860 320 L 860 60 C 860 50, 865 40, 880 40 Z" fill="#ffffff"/>
         </svg>
       </div>
-      SAGE
     </div>
     <div class="hero-nav-right">
       <button class="winter-btn" id="winterToggle" aria-label="Зимовий режим">
@@ -657,11 +667,11 @@
 
 <footer id="contacts"><div class="wrap">
   <div class="foot-grid">
-    <div><div class="foot-brand">Sage</div><p style="font-size:13px;color:var(--muted);max-width:320px;line-height:1.6">Місце, де починається твій стиль. Репліки світових брендів. Умань, Україна.</p></div>
+    <div><div class="foot-brand">Sable</div><p style="font-size:13px;color:var(--muted);max-width:320px;line-height:1.6">Місце, де починається твій стиль. Репліки світових брендів. Умань, Україна.</p></div>
     <div class="foot-col"><h5>Бренди</h5><div class="brand-links-grid"><a data-brand="C.P. Company">C.P. Company</a><a data-brand="Supreme">Supreme</a><a data-brand="Nike">Nike</a><a data-brand="Balenciaga">Balenciaga</a><a data-brand="Asics">Asics</a><a data-brand="Stone Island">Stone Island</a><a data-brand="Rick Owens">Rick Owens</a><a data-brand="Chrome Hearts">Chrome Hearts</a><a data-brand="E.R.D">E.R.D</a></div></div>
     <div class="foot-col"><h5>Допомога</h5><a href="#" id="deliveryLink">Доставка</a><a href="#" id="returnLink">Повернення</a></div>
   </div>
-  <div class="foot-bottom"><span>© 2026 Sage. Всі права захищені.</span><span>Умань · Онлайн</span></div>
+  <div class="foot-bottom"><span>© 2026 Sable. Всі права захищені.</span><span>Умань · Онлайн</span></div>
 </div></footer>
 
 <div class="modal-overlay" id="modalOverlay"><div class="modal"><div class="modal-img" id="modalImg"></div><div class="modal-body"><button class="modal-close" id="modalCloseBtn">×</button><div class="modal-brand" id="modalBrand"></div><div class="modal-title" id="modalTitle"></div><div class="modal-desc" id="modalDesc"></div><div class="modal-price" id="modalPrice"></div><div class="size-label" id="colorLabel">Колір</div><div class="modal-colors" id="modalColors"></div><div class="size-label">Розмір</div><div class="sizes" id="modalSizes"></div><div class="size-label">Кількість</div><div class="qty-selector"><button id="qtyMinus">-</button><span id="qtyDisplay">1</span><button id="qtyPlus">+</button></div><button class="modal-add" id="modalAdd">Додати в кошик</button></div></div></div>
@@ -696,7 +706,7 @@
   <div class="admin-head"><h3>Адмін-панель</h3><button class="modal-close" id="adminCloseBtn" style="position:static; width:28px; height:28px;">×</button></div>
   <div class="admin-tabs"><button class="admin-tab active" id="tabProducts" data-tab="products">Товари</button><button class="admin-tab" id="tabPromos" data-tab="promos">Промокоди</button></div>
   <div class="admin-content" id="adminContentProducts"></div>
-  <div class="admin-content" id="adminContentPromos" style="display:none;"><div class="promo-create-box"><input type="text" id="newPromoCode" class="promo-input" placeholder="Код (напр. SAGE10)" style="flex:1;" maxlength="32"><input type="number" id="newPromoDiscount" class="promo-input" placeholder="% знижки" style="width:100px;" min="1" max="100"><button class="promo-btn" id="createPromoBtn">Створити</button></div><div id="promoList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
+  <div class="admin-content" id="adminContentPromos" style="display:none;"><div class="promo-create-box"><input type="text" id="newPromoCode" class="promo-input" placeholder="Код (напр. SABLE10)" style="flex:1;" maxlength="32"><input type="number" id="newPromoDiscount" class="promo-input" placeholder="% знижки" style="width:100px;" min="1" max="100"><button class="promo-btn" id="createPromoBtn">Створити</button></div><div id="promoList" style="display:flex; flex-direction:column; gap:10px;"></div></div>
 </div></div>
 
 <div class="cart-overlay" id="cartOverlay"></div>
@@ -734,6 +744,32 @@ function safeColor(c){
   if (/^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/.test(v)) return v;
   return '#000';
 }
+
+/* ===== МІГРАЦІЯ КЛЮЧІВ SAGE -> SABLE ===== */
+(function migrateStorage(){
+  try {
+    const pairs = [
+      ['sage_cart_v2', 'sable_cart_v2'],
+      ['sage_active_promo', 'sable_active_promo'],
+      ['sage_winter', 'sable_winter'],
+      ['sage_products_cache', 'sable_products_cache'],
+      ['sage_admin_token', 'sable_admin_token']
+    ];
+    for (const [oldK, newK] of pairs){
+      const val = localStorage.getItem(oldK);
+      if (val !== null){
+        if (localStorage.getItem(newK) === null) localStorage.setItem(newK, val);
+        localStorage.removeItem(oldK);
+      }
+    }
+    // sessionStorage токен
+    const oldTok = sessionStorage.getItem('sage_admin_token');
+    if (oldTok !== null){
+      if (sessionStorage.getItem('sable_admin_token') === null) sessionStorage.setItem('sable_admin_token', oldTok);
+      sessionStorage.removeItem('sage_admin_token');
+    }
+  } catch(e){}
+})();
 
 /* ===== ДЕФОЛТНІ ТОВАРИ (ТЕПЕР РЕПЛІКА) ===== */
 const DEFAULT_PRODUCTS = [
@@ -783,7 +819,7 @@ async function loadData() {
       const data = await res.json();
       if (data && Array.isArray(data) && data.length > 0) {
         PRODUCTS = data;
-        try { localStorage.setItem('sage_products_cache', JSON.stringify(data)); } catch(e) {}
+        try { localStorage.setItem('sable_products_cache', JSON.stringify(data)); } catch(e) {}
         return;
       }
     }
@@ -866,7 +902,7 @@ function savePromos() {
 
 function adminSaveFailed(res) {
   if (res.status === 401 || res.status === 403) {
-    adminToken = null; ssDel('sage_admin_token');
+    adminToken = null; ssDel('sable_admin_token');
     showToast('Сесія адміна закінчилась. Натисніть Ctrl+Shift+A.');
   } else {
     showToast('Помилка збереження (' + res.status + ')');
@@ -994,7 +1030,7 @@ function stopSnow(){
 function toggleWinterMode(){
   document.body.classList.toggle('winter-mode');
   const isWinter = document.body.classList.contains('winter-mode');
-  lsSet('sage_winter', isWinter);
+  lsSet('sable_winter', isWinter);
   if (isWinter){ createSnow(); startSnow(); }
   else { stopSnow(); }
 }
@@ -1017,7 +1053,7 @@ document.addEventListener('visibilitychange', function(){
 
 resizeCanvas();
 
-if (lsGet('sage_winter') === 'true'){
+if (lsGet('sable_winter') === 'true'){
   document.body.classList.add('winter-mode');
   createSnow();
   startSnow();
@@ -1025,14 +1061,14 @@ if (lsGet('sage_winter') === 'true'){
 
 /* ===== КОШИК ===== */
 function loadCart(){
-  try { var saved = JSON.parse(lsGet('sage_cart_v2') || '[]'); if (Array.isArray(saved)) cart = saved; } catch(e){ cart = []; }
-  try { var promo = JSON.parse(lsGet('sage_active_promo') || 'null'); if (promo && promo.code && typeof promo.discount === 'number') activePromo = promo; } catch(e){ activePromo = null; }
+  try { var saved = JSON.parse(lsGet('sable_cart_v2') || '[]'); if (Array.isArray(saved)) cart = saved; } catch(e){ cart = []; }
+  try { var promo = JSON.parse(lsGet('sable_active_promo') || 'null'); if (promo && promo.code && typeof promo.discount === 'number') activePromo = promo; } catch(e){ activePromo = null; }
 }
 function saveCart(){
   try {
-    localStorage.setItem('sage_cart_v2', JSON.stringify(cart));
-    if (activePromo) localStorage.setItem('sage_active_promo', JSON.stringify(activePromo));
-    else localStorage.removeItem('sage_active_promo');
+    localStorage.setItem('sable_cart_v2', JSON.stringify(cart));
+    if (activePromo) localStorage.setItem('sable_active_promo', JSON.stringify(activePromo));
+    else localStorage.removeItem('sable_active_promo');
   } catch(e){}
   updateCartCount();
 }
@@ -1412,7 +1448,7 @@ async function sendOrderToTelegram(text){
 
 function buildOrderText(order){
   var lines = [];
-  lines.push('<b>Нове замовлення Sage</b>');
+  lines.push('<b>Нове замовлення Sable</b>');
   lines.push('Код: <code>' + esc(order.code) + '</code>');
   lines.push('Дата: ' + esc(order.date));
   lines.push('<b>Клієнт:</b>');
@@ -1462,14 +1498,14 @@ async function processCheckout(name, phone, email, address, payment) {
 let currentAdminTab = 'products';
 
 async function requestAdminAccess(){
-  if (ssGet('sage_admin_token')) { adminToken = ssGet('sage_admin_token'); openAdmin(); return; }
+  if (ssGet('sable_admin_token')) { adminToken = ssGet('sable_admin_token'); openAdmin(); return; }
   var pass = prompt('Пароль адміна:');
   if (pass == null) return;
   try {
     var res = await fetchWithTimeout(API_URL + '/admin/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pass }) }, 10000);
     var data = await res.json();
     if (data && data.ok && data.token) {
-      ssSet('sage_admin_token', data.token);
+      ssSet('sable_admin_token', data.token);
       adminToken = data.token;
       openAdmin();
     } else { showToast(data && data.error ? 'Забагато спроб. Зачекайте 15 хвилин.' : 'Невірний пароль'); }
@@ -1928,7 +1964,7 @@ renderCart();
 
 // Миттєвий показ товарів із кешу, поки сервер відповідає
 try {
-  var _cached = JSON.parse(lsGet('sage_products_cache') || 'null');
+  var _cached = JSON.parse(lsGet('sable_products_cache') || 'null');
   if (Array.isArray(_cached) && _cached.length > 0) {
     PRODUCTS = _cached;
     applyFilter('all');
