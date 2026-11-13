@@ -514,19 +514,36 @@
     .hero-visual-card{background:rgba(20,20,24,.75)}
     .modal-overlay,.cart-overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(0,0,0,.85)}
   }
-  @media (prefers-reduced-motion: reduce){
-    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
-    .marquee-content{animation:none}
-  }
 
-  /* ПЛАВНИЙ ПЕРЕХІД З HERO В КАТАЛОГ (без різкої межі) */
-  .hero-section{
-    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 140px),transparent 100%);
-    mask-image:linear-gradient(to bottom,#000 calc(100% - 140px),transparent 100%);
+  /* HERO: фон і затемнення плавно згасають униз; картки й текст не чіпаємо */
+  .hero-section{ background:none; height:auto; min-height:max(100vh,700px); }
+  .hero-section::after{
+    content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:url('https://i.imgur.com/YhGEkG3.jpeg') center/cover no-repeat;
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 220px),transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 220px),transparent 100%);
   }
-  .hero-main{ padding-bottom:150px; }
+  .hero-section::before{
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 220px),transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 220px),transparent 100%);
+  }
+  .hero-main{ padding-bottom:80px; }
+  .marquee-content{ will-change:transform; }
+
+  /* ЦІНИ: яскравіші та крупніші */
+  :root{ --price:#ff6b6b; }
+  body.winter-mode{ --price:#8cc4ff; }
+  .price-new,.hero-visual-price{ color:var(--price); }
+  .hero-visual-price{ font-size:19px; font-weight:800; text-shadow:0 1px 10px rgba(0,0,0,.7); }
+  .hero-visual-price .old{ color:rgba(255,255,255,.65); text-shadow:none; }
+  .card-price{ font-weight:700; }
   @media(max-width:900px){
-    .hero-main{ padding-bottom:150px; }
+    .hero-main{ padding-bottom:70px; }
+    .hero-visual-price{ font-size:15px; }
+    .hero-visual-price .old{ font-size:11px; }
+  }
+  @media(max-width:560px){
+    .card-price{ font-size:14px; }
   }
 </style>
 </head>
