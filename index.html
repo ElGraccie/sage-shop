@@ -4,9 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sage — місце, де починається твій стиль</title>
+<meta name="description" content="Sage — репліки одягу та взуття світових брендів. Stone Island, Nike, Supreme, Balenciaga та інші. Доставка Новою поштою по Україні.">
+<meta name="theme-color" content="#08080a">
+<meta property="og:title" content="Sage — місце, де починається твій стиль">
+<meta property="og:description" content="Репліки одягу та взуття світових брендів. Доставка Новою поштою по Україні.">
+<meta property="og:image" content="https://i.imgur.com/YhGEkG3.jpeg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://i.imgur.com" crossorigin>
+<link rel="preconnect" href="https://shy-glitter-68a5.barsuknoname.workers.dev" crossorigin>
+<link rel="preload" as="image" href="https://i.imgur.com/YhGEkG3.jpeg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <link rel="icon" href="data:,">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
   :root{
     --bg:#08080a;--card-bg:rgba(20,20,24,.4);--card-bg-hover:rgba(32,32,38,.6);
     --ink:#f0ece4;--muted:#a8a29a;--line:rgba(255,255,255,.12);--line-soft:rgba(255,255,255,.06);
@@ -281,7 +291,7 @@
   .skeleton-img{aspect-ratio:4/5;margin-bottom:16px;background:linear-gradient(110deg, rgba(255,255,255,.03) 8%, rgba(255,255,255,.08) 18%, rgba(255,255,255,.03) 33%);background-size:200% 100%;animation:shimmer 1.6s ease-in-out infinite}
   .skeleton-line{height:10px;border-radius:4px;margin:0 18px 10px;background:linear-gradient(110deg, rgba(255,255,255,.03) 8%, rgba(255,255,255,.08) 18%, rgba(255,255,255,.03) 33%);background-size:200% 100%;animation:shimmer 1.6s ease-in-out infinite}
   .skeleton-line.short{width:40%}
-  .card{ background:var(--card-bg);backdrop-filter:blur(32px) saturate(1.4);-webkit-backdrop-filter:blur(32px) saturate(1.4);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .5s var(--ease-smooth);display:flex;flex-direction:column;padding-bottom:22px;border:1px solid var(--line);position:relative;will-change: transform, background; }
+  .card{ background:var(--card-bg);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .5s var(--ease-smooth);display:flex;flex-direction:column;padding-bottom:22px;border:1px solid var(--line);position:relative;content-visibility:auto;contain-intrinsic-size:auto 480px; }
   .card:hover{background:var(--card-bg-hover);border-color:rgba(255,255,255,.3);box-shadow:0 16px 48px rgba(0,0,0,.8);transform:translateY(-5px)}
   body.winter-mode .card:hover{border-color:rgba(150,190,255,.4);box-shadow:0 16px 48px rgba(0,0,0,.8), inset 0 0 15px rgba(150,190,255,.1);}
   .card:hover .card-img > *{transform:scale(1.05)}
@@ -496,6 +506,18 @@
   .np-option small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
   .np-empty{padding:12px;font-size:12px;color:var(--muted)}
   .form-input:disabled{opacity:.5;cursor:not-allowed}
+
+  /* ОПТИМІЗАЦІЯ: мобільні та reduced-motion */
+  @media(max-width:900px){
+    .card,.hero-visual-card,.filter-btn,.search-wrap,.hero-badge,.brand-marquee{backdrop-filter:none;-webkit-backdrop-filter:none}
+    .card{background:rgba(20,20,24,.72)}
+    .hero-visual-card{background:rgba(20,20,24,.75)}
+    .modal-overlay,.cart-overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(0,0,0,.85)}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+    .marquee-content{animation:none}
+  }
 </style>
 </head>
 <body>
@@ -702,11 +724,13 @@ async function loadData() {
       const data = await res.json();
       if (data && Array.isArray(data) && data.length > 0) {
         PRODUCTS = data;
+        try { localStorage.setItem('sage_products_cache', JSON.stringify(data)); } catch(e) {}
         return;
       }
     }
   } catch(e) { console.warn('Сервер товарів недоступний:', e.message || e); }
 
+  if (PRODUCTS && PRODUCTS.length > 0) return; // залишаємо кеш, якщо сервер недоступний
   PRODUCTS = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)).map(function(p){
     p.salesCount = p.salesCount || 0;
     return p;
@@ -875,7 +899,7 @@ function productSVG(p, colorIdx){
   if(col.img){
     var extra = col.imgClass ? ' ' + col.imgClass : '';
     var altText = [p.brand, p.name, col.name].filter(Boolean).join(' ');
-    return '<img src="' + esc(col.img) + '" alt="' + esc(altText) + '" loading="lazy" class="real-img' + extra + '"'
+    return '<img src="' + esc(col.img) + '" alt="' + esc(altText) + '" loading="lazy" decoding="async" class="real-img' + extra + '"'
       + ' onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'flex\';"'
       + '><div class="img-fallback" style="display:none;">Немає фото</div>';
   }
@@ -906,7 +930,7 @@ function renderHeroNewArrivals() {
       html += '<div class="hero-promo-badge">Акція -' + latest.discount + '%</div>';
     }
 
-    html += '<div class="hero-visual-img">' + productSVG(latest, cidxH) + '</div>';
+    html += '<div class="hero-visual-img">' + productSVG(latest, cidxH).replace('loading="lazy"', 'loading="eager" fetchpriority="high"') + '</div>';
     html += '<div class="hero-visual-brand">' + esc(latest.brand) + '</div>';
     html += '<div class="hero-visual-name">' + esc(latest.name) + '</div>';
     html += '<div class="hero-visual-price">' + fmt(finalPriceH);
@@ -1025,7 +1049,7 @@ var filtersEl = document.getElementById('filters');
 if(filtersEl){ filtersEl.addEventListener('click', function(e){ var btn = e.target.closest('.filter-btn'); if(!btn) return; var f = btn.getAttribute('data-filter'); if(f) applyFilter(f); }); }
 
 var searchInput = document.getElementById('searchInput');
-if(searchInput){ searchInput.addEventListener('input', function(e){ searchQuery = e.target.value; renderGrid(); }); }
+if(searchInput){ var _searchTimer; searchInput.addEventListener('input', function(e){ var v = e.target.value; clearTimeout(_searchTimer); _searchTimer = setTimeout(function(){ searchQuery = v; renderGrid(); }, 150); }); }
 
 /* ===== МОДАЛЬНЕ ВІКНО ===== */
 window.openModal = function(id){
@@ -1579,7 +1603,8 @@ async function npSearchCities(q){
       function(c){ return c.AreaDescription ? c.AreaDescription + ' обл.' : ''; },
       npPickCity);
   } catch(e) {
-    list.innerHTML = '<div class="np-empty">Помилка завантаження. Спробуйте ще раз.</div>';
+    console.error('NP error:', e);
+    list.innerHTML = '<div class="np-empty">Помилка: ' + esc(e && e.message ? e.message : 'невідома') + '</div>';
     list.classList.add('open');
   }
 }
@@ -1613,7 +1638,8 @@ async function npSearchWarehouses(q){
         list.classList.remove('open');
       });
   } catch(e) {
-    list.innerHTML = '<div class="np-empty">Помилка завантаження. Спробуйте ще раз.</div>';
+    console.error('NP error:', e);
+    list.innerHTML = '<div class="np-empty">Помилка: ' + esc(e && e.message ? e.message : 'невідома') + '</div>';
     list.classList.add('open');
   }
 }
@@ -1745,6 +1771,16 @@ window.addEventListener('resize', function() {
 initMarquee();
 loadCart();
 renderCart();
+
+// Миттєвий показ товарів із кешу, поки сервер відповідає
+try {
+  var _cached = JSON.parse(lsGet('sage_products_cache') || 'null');
+  if (Array.isArray(_cached) && _cached.length > 0) {
+    PRODUCTS = _cached;
+    applyFilter('all');
+    renderHeroNewArrivals();
+  }
+} catch(e) {}
 
 loadData().then(function(){
   applyFilter('all');
